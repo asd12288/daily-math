@@ -12,7 +12,7 @@ export const mockUser = {
   longestStreak: 14,
   dailyExerciseCount: 5,
   exercisesCompletedToday: 3,
-  enrolledCourses: ["calculus-1", "linear-algebra"],
+  enrolledCourses: ["pre-calculus-algebra"],
   joinedAt: "2024-01-15",
 };
 
@@ -31,38 +31,15 @@ export const mockLevels = [
 
 export const mockCourses = [
   {
-    id: "calculus-1",
-    name: "Calculus 1",
-    nameHe: "חדו״א 1",
-    description: "Limits, derivatives, and integrals",
+    id: "pre-calculus-algebra",
+    name: "Pre-Calculus Algebra",
+    nameHe: "אלגברה קדם-חשבון",
+    description: "Build a strong foundation with order of operations, fractions, equations, and word problems",
     icon: "tabler:math-function",
     color: "primary",
-    topics: ["Limits", "Derivatives", "Integrals", "Applications"],
-    exerciseCount: 150,
+    topics: ["Order of Operations", "Fractions & Decimals", "Basic Equations", "Linear Equations", "Word Problems"],
+    exerciseCount: 470,
     enrolled: true,
-  },
-  {
-    id: "linear-algebra",
-    name: "Linear Algebra",
-    nameHe: "אלגברה ליניארית",
-    description: "Vectors, matrices, and linear transformations",
-    icon: "tabler:grid-3x3",
-    color: "secondary",
-    topics: ["Vectors", "Matrices", "Eigenvalues", "Linear Transformations"],
-    exerciseCount: 120,
-    enrolled: true,
-  },
-  {
-    id: "physics-1",
-    name: "Physics 1",
-    nameHe: "פיסיקה 1",
-    description: "Mechanics and thermodynamics",
-    icon: "tabler:atom",
-    color: "warning",
-    topics: ["Kinematics", "Dynamics", "Energy", "Thermodynamics"],
-    exerciseCount: 100,
-    enrolled: false,
-    comingSoon: true,
   },
 ];
 
@@ -86,126 +63,130 @@ export interface MockExercise {
 export const mockExercises: MockExercise[] = [
   {
     id: "ex-1",
-    courseId: "calculus-1",
-    courseName: "Calculus 1",
-    topic: "Derivatives",
+    courseId: "pre-calculus-algebra",
+    courseName: "Pre-Calculus Algebra",
+    topic: "Order of Operations",
     difficulty: "easy",
     xp: 10,
-    question: "Find the derivative of $f(x) = x^3 - 2x^2 + 5x - 3$",
-    solution: `**Step 1:** Apply the power rule to each term.
+    question: "Evaluate: $3 + 4 \\times 2$",
+    solution: `**Step 1:** Apply order of operations (PEMDAS/BODMAS).
 
-$\\frac{d}{dx}(x^3) = 3x^2$
+Multiplication comes before addition.
 
-$\\frac{d}{dx}(-2x^2) = -4x$
+$4 \\times 2 = 8$
 
-$\\frac{d}{dx}(5x) = 5$
+**Step 2:** Add the results.
 
-$\\frac{d}{dx}(-3) = 0$
-
-**Step 2:** Combine the results.
-
-$f'(x) = 3x^2 - 4x + 5$`,
-    answer: "$f'(x) = 3x^2 - 4x + 5$",
-    tip: "Remember the power rule: $\\frac{d}{dx}(x^n) = nx^{n-1}$",
-    estimatedTime: 3,
+$3 + 8 = 11$`,
+    answer: "$11$",
+    tip: "Remember: Multiplication and division before addition and subtraction!",
+    estimatedTime: 2,
     status: "completed",
   },
   {
     id: "ex-2",
-    courseId: "calculus-1",
-    courseName: "Calculus 1",
-    topic: "Integrals",
+    courseId: "pre-calculus-algebra",
+    courseName: "Pre-Calculus Algebra",
+    topic: "Fractions & Decimals",
     difficulty: "medium",
-    xp: 20,
-    question: "Evaluate the definite integral: $\\int_0^2 (3x^2 + 2x) \\, dx$",
-    solution: `**Step 1:** Find the antiderivative.
+    xp: 15,
+    question: "Calculate: $\\frac{2}{3} + \\frac{1}{4}$",
+    solution: `**Step 1:** Find a common denominator.
 
-$\\int (3x^2 + 2x) \\, dx = x^3 + x^2 + C$
+LCD of 3 and 4 is 12.
 
-**Step 2:** Apply the Fundamental Theorem of Calculus.
+**Step 2:** Convert fractions.
 
-$\\left[ x^3 + x^2 \\right]_0^2 = (2^3 + 2^2) - (0^3 + 0^2)$
+$\\frac{2}{3} = \\frac{8}{12}$
 
-$= (8 + 4) - 0 = 12$`,
-    answer: "$12$",
-    tip: "Use the Fundamental Theorem of Calculus: $\\int_a^b f(x)dx = F(b) - F(a)$",
-    estimatedTime: 5,
+$\\frac{1}{4} = \\frac{3}{12}$
+
+**Step 3:** Add the fractions.
+
+$\\frac{8}{12} + \\frac{3}{12} = \\frac{11}{12}$`,
+    answer: "$\\frac{11}{12}$",
+    tip: "Find the least common denominator (LCD) first!",
+    estimatedTime: 3,
     status: "completed",
   },
   {
     id: "ex-3",
-    courseId: "calculus-1",
-    courseName: "Calculus 1",
-    topic: "Derivatives",
+    courseId: "pre-calculus-algebra",
+    courseName: "Pre-Calculus Algebra",
+    topic: "Basic Equations",
     difficulty: "medium",
-    xp: 20,
-    question: "Find $\\frac{dy}{dx}$ if $y = \\sin(x^2)$",
-    solution: `**Step 1:** Identify this as a chain rule problem.
+    xp: 15,
+    question: "Solve for x: $2x + 3 = 11$",
+    solution: `**Step 1:** Subtract 3 from both sides.
 
-Let $u = x^2$, so $y = \\sin(u)$
+$2x + 3 - 3 = 11 - 3$
 
-**Step 2:** Apply the chain rule.
+$2x = 8$
 
-$\\frac{dy}{dx} = \\frac{dy}{du} \\cdot \\frac{du}{dx}$
+**Step 2:** Divide both sides by 2.
 
-$= \\cos(u) \\cdot 2x$
+$\\frac{2x}{2} = \\frac{8}{2}$
 
-$= 2x\\cos(x^2)$`,
-    answer: "$\\frac{dy}{dx} = 2x\\cos(x^2)$",
-    tip: "Chain rule: $\\frac{d}{dx}[f(g(x))] = f'(g(x)) \\cdot g'(x)$",
-    estimatedTime: 4,
+$x = 4$`,
+    answer: "$x = 4$",
+    tip: "Isolate the variable by doing inverse operations!",
+    estimatedTime: 3,
     status: "in_progress",
   },
   {
     id: "ex-4",
-    courseId: "linear-algebra",
-    courseName: "Linear Algebra",
-    topic: "Matrices",
+    courseId: "pre-calculus-algebra",
+    courseName: "Pre-Calculus Algebra",
+    topic: "Linear Equations",
     difficulty: "hard",
-    xp: 30,
-    question: "Find the eigenvalues of the matrix $A = \\begin{pmatrix} 3 & 1 \\\\ 0 & 2 \\end{pmatrix}$",
-    solution: `**Step 1:** Set up the characteristic equation.
+    xp: 20,
+    question: "Solve: $3(x - 2) + 4 = 2x + 5$",
+    solution: `**Step 1:** Distribute the 3.
 
-$\\det(A - \\lambda I) = 0$
+$3x - 6 + 4 = 2x + 5$
 
-$\\det \\begin{pmatrix} 3-\\lambda & 1 \\\\ 0 & 2-\\lambda \\end{pmatrix} = 0$
+$3x - 2 = 2x + 5$
 
-**Step 2:** Calculate the determinant.
+**Step 2:** Subtract 2x from both sides.
 
-$(3-\\lambda)(2-\\lambda) - (1)(0) = 0$
+$x - 2 = 5$
 
-$(3-\\lambda)(2-\\lambda) = 0$
+**Step 3:** Add 2 to both sides.
 
-**Step 3:** Solve for $\\lambda$.
-
-$\\lambda_1 = 3, \\quad \\lambda_2 = 2$`,
-    answer: "$\\lambda_1 = 3, \\lambda_2 = 2$",
-    tip: "For triangular matrices, the eigenvalues are the diagonal entries!",
-    estimatedTime: 6,
+$x = 7$`,
+    answer: "$x = 7$",
+    tip: "Distribute first, then collect like terms!",
+    estimatedTime: 5,
     status: "pending",
   },
   {
     id: "ex-5",
-    courseId: "linear-algebra",
-    courseName: "Linear Algebra",
-    topic: "Vectors",
-    difficulty: "easy",
-    xp: 10,
-    question: "Calculate the dot product of $\\vec{u} = (2, 3, -1)$ and $\\vec{v} = (1, -2, 4)$",
-    solution: `**Step 1:** Apply the dot product formula.
+    courseId: "pre-calculus-algebra",
+    courseName: "Pre-Calculus Algebra",
+    topic: "Word Problems",
+    difficulty: "medium",
+    xp: 15,
+    question: "Tom is 5 years older than Sara. Together their ages sum to 31. How old is Sara?",
+    solution: `**Step 1:** Set up variables.
 
-$\\vec{u} \\cdot \\vec{v} = u_1v_1 + u_2v_2 + u_3v_3$
+Let Sara's age = x
 
-**Step 2:** Substitute the values.
+Tom's age = x + 5
 
-$= (2)(1) + (3)(-2) + (-1)(4)$
+**Step 2:** Write the equation.
 
-$= 2 - 6 - 4$
+$x + (x + 5) = 31$
 
-$= -8$`,
-    answer: "$-8$",
-    tip: "Dot product: $\\vec{u} \\cdot \\vec{v} = \\sum_{i=1}^n u_i v_i$",
-    estimatedTime: 2,
+**Step 3:** Solve.
+
+$2x + 5 = 31$
+
+$2x = 26$
+
+$x = 13$`,
+    answer: "Sara is 13 years old",
+    tip: "Define variables clearly and translate words into equations!",
+    estimatedTime: 4,
     status: "pending",
   },
 ];
@@ -242,7 +223,7 @@ export const mockStats = {
   totalExercises: 47,
   correctRate: 0.85,
   averageTime: 4.2, // minutes per exercise
-  favoriteSubject: "Calculus 1",
+  favoriteSubject: "Pre-Calculus Algebra",
 };
 
 export const mockNotificationSettings = {

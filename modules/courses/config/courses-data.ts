@@ -26,31 +26,7 @@ export const PRE_CALCULUS_COURSE: Course = {
  */
 export const COURSES: Course[] = [
   PRE_CALCULUS_COURSE,
-  // Future courses (inactive for now)
-  {
-    id: "calculus-1",
-    name: "Calculus 1",
-    nameHe: "חשבון אינפיניטסימלי 1",
-    description: "Limits, derivatives, and basic integration",
-    descriptionHe: "גבולות, נגזרות ואינטגרציה בסיסית",
-    icon: "tabler:chart-area-line",
-    color: "#8B5CF6", // secondary-500
-    isActive: false,
-    sortOrder: 2,
-    branchIds: [],
-  },
-  {
-    id: "linear-algebra",
-    name: "Linear Algebra",
-    nameHe: "אלגברה ליניארית",
-    description: "Vectors, matrices, and linear transformations",
-    descriptionHe: "וקטורים, מטריצות והעתקות ליניאריות",
-    icon: "tabler:grid-3x3",
-    color: "#10B981", // success-500
-    isActive: false,
-    sortOrder: 3,
-    branchIds: [],
-  },
+  // Future courses will be added here when ready
 ];
 
 /**

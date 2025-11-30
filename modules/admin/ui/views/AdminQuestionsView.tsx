@@ -155,8 +155,8 @@ export function AdminQuestionsView() {
           <CardContent className="p-6">
             <QuestionForm
               initialData={editingQuestion || undefined}
-              courses={MOCK_COURSES}
-              topics={MOCK_TOPICS}
+              courses={courses}
+              topics={topics}
               onSubmit={handleFormSubmit}
               onCancel={handleFormCancel}
               isSubmitting={createMutation.isPending || updateMutation.isPending}
@@ -251,8 +251,8 @@ export function AdminQuestionsView() {
       <QuestionFiltersPanel
         filters={filters}
         onFiltersChange={handleFiltersChange}
-        courses={MOCK_COURSES}
-        topics={MOCK_TOPICS}
+        courses={courses}
+        topics={topics}
       />
 
       {/* Bulk Actions */}

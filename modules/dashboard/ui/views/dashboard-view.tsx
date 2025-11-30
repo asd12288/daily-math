@@ -164,10 +164,10 @@ export function DashboardView() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-gray-900 dark:text-white">
-                        Exercise {index + 1}
+                        {t("dashboard.exercise")} {index + 1}
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                        Calculus 1 - Derivatives
+                        Pre-Calculus Algebra
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
