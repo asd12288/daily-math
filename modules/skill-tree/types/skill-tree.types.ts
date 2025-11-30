@@ -28,8 +28,12 @@ export type Difficulty = "easy" | "medium" | "hard";
 
 /**
  * Topic status based on user progress
+ * Note: All topics are unlocked from the start - only visual difference
+ * - not_started: Never attempted (gray/dim visual)
+ * - in_progress: Started but not mastered (partial progress visual)
+ * - mastered: Completed (checkmark/green visual)
  */
-export type TopicStatus = "locked" | "available" | "in_progress" | "mastered";
+export type TopicStatus = "not_started" | "in_progress" | "mastered";
 
 /**
  * Topic - An individual skill/concept to learn
@@ -66,12 +70,16 @@ export interface TopicProgress {
 
 /**
  * Topic with progress - combined view for UI
+ * Note: All topics are always available (canPractice: true)
  */
 export interface TopicWithProgress extends Topic {
   progress: TopicProgress | null;
   status: TopicStatus;
   mastery: number;
-  isUnlocked: boolean;
+  canPractice: true; // Always true - all topics unlocked
+  // Keep prerequisites for UI display (recommended order)
+  hasUnmetPrerequisites: boolean;
+  recommendedFirst: string[]; // Topic IDs to consider doing first
 }
 
 /**
@@ -146,15 +154,35 @@ export function isMastered(progress: TopicProgress): boolean {
 }
 
 /**
- * Determine topic status based on progress and prerequisites
+ * Determine topic status based on progress
+ * Note: Prerequisites are no longer checked - all topics are always available
  */
 export function determineTopicStatus(
-  progress: TopicProgress | null,
-  prerequisitesMet: boolean
+  progress: TopicProgress | null
 ): TopicStatus {
-  if (!prerequisitesMet) return "locked";
-  if (!progress) return "available";
+  if (!progress || progress.totalAttempts === 0) return "not_started";
   if (isMastered(progress)) return "mastered";
-  if (progress.totalAttempts > 0) return "in_progress";
-  return "available";
+  return "in_progress";
+}
+
+/**
+ * Check if prerequisites are met (for UI recommendations only)
+ */
+export function checkPrerequisitesMet(
+  topicPrerequisites: string[],
+  allProgress: Map<string, TopicProgress>
+): { met: boolean; unmetTopics: string[] } {
+  const unmetTopics: string[] = [];
+
+  for (const prereqId of topicPrerequisites) {
+    const prereqProgress = allProgress.get(prereqId);
+    if (!prereqProgress || !isMastered(prereqProgress)) {
+      unmetTopics.push(prereqId);
+    }
+  }
+
+  return {
+    met: unmetTopics.length === 0,
+    unmetTopics
+  };
 }

@@ -84,7 +84,7 @@ function branchesToFlow(
               type: MarkerType.ArrowClosed,
               width: 15,
               height: 15,
-              color: topic.status === "locked" ? "#9ca3af" : branchHexColor,
+              color: topic.status === "not_started" || topic.status === ("locked" as unknown) ? "#9ca3af" : branchHexColor,
             },
           });
         }
@@ -123,23 +123,23 @@ export function SkillTreeFlow({ branches, onTopicClick, isRtl = false }: SkillTr
       return inProgressNodes.map((n) => n.id);
     }
 
-    const availableNodes = layoutedNodes.filter(
-      (n) => (n.data as unknown as SkillNodeData).status === "available"
+    const notStartedNodes = layoutedNodes.filter(
+      (n) => (n.data as unknown as SkillNodeData).status === "not_started" ||
+             (n.data as unknown as SkillNodeData).status === ("available" as unknown)
     );
-    if (availableNodes.length > 0) {
-      // Return first 2 available nodes
-      return availableNodes.slice(0, 2).map((n) => n.id);
+    if (notStartedNodes.length > 0) {
+      // Return first 2 not_started nodes
+      return notStartedNodes.slice(0, 2).map((n) => n.id);
     }
 
     // Fallback: return first few nodes
     return layoutedNodes.slice(0, 3).map((n) => n.id);
   })();
 
-  // Handle node click - only for non-locked topics
+  // Handle node click - all topics are now clickable
   const onNodeClick = useCallback(
     (_event: React.MouseEvent, node: Node) => {
-      const nodeData = node.data as unknown as SkillNodeData;
-      if (nodeData.status !== "locked" && onTopicClick) {
+      if (onTopicClick) {
         onTopicClick(node.id);
       }
     },
@@ -147,7 +147,7 @@ export function SkillTreeFlow({ branches, onTopicClick, isRtl = false }: SkillTr
   );
 
   return (
-    <div className="h-[calc(100vh-220px)] min-h-[400px] w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
+    <div className="h-full w-full bg-gray-100 dark:bg-gray-950 overflow-hidden">
       <ReactFlow
         nodes={layoutedNodes}
         edges={edges}

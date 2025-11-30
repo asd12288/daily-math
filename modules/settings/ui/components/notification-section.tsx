@@ -57,11 +57,8 @@ function NotificationItem({
   isPending,
   colorClass = "primary",
 }: NotificationItemProps) {
-  // Dynamic color classes based on colorClass prop and enabled state
-  const _bgClass = enabled
-    ? `bg-${colorClass}-100 dark:bg-${colorClass}-900/30`
-    : "bg-gray-200 dark:bg-gray-700";
-  const _textClass = enabled ? `text-${colorClass}-600` : "text-gray-400";
+  // Note: Dynamic color classes are reserved for future use with Tailwind safelist
+  void colorClass;
 
   return (
     <div className="flex items-start gap-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50">

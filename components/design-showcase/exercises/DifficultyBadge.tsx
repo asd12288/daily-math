@@ -1,7 +1,7 @@
 "use client";
 
 import { Icon } from "@iconify/react";
-import type { Difficulty } from "@/lib/mock-data";
+import type { Difficulty } from "../mock-data";
 
 interface DifficultyBadgeProps {
   difficulty: Difficulty;

@@ -249,6 +249,67 @@ body {
   animation: flame 0.5s ease-in-out infinite;
 }
 
+/* Toast slide-up animation - soft entrance from bottom */
+@keyframes slide-up-fade {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down-fade {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+}
+
+.animate-slide-up-fade {
+  animation: slide-up-fade 0.4s ease-out forwards;
+}
+
+.animate-slide-down-fade {
+  animation: slide-down-fade 0.3s ease-in forwards;
+}
+
+/* Fade in animation */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+/* Scale in animation for modals */
+@keyframes scale-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out forwards;
+}
+
 /* Sidebar Styles */
 .menu-sidebar {
   flex-shrink: 0;
@@ -439,4 +500,38 @@ body {
 
 [data-swipe="end"].toast-animated {
   animation: toast-slide-out 0.15s ease-out forwards;
+}
+
+/* ===== React Flow Controls Dark Mode ===== */
+.dark .react-flow__controls {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark .react-flow__controls-button {
+  background-color: #1f2937 !important;
+  border-bottom-color: #374151 !important;
+  border-color: #374151 !important;
+}
+
+.dark .react-flow__controls-button:hover {
+  background-color: #374151 !important;
+}
+
+.dark .react-flow__controls-button svg {
+  fill: #d1d5db !important;
+}
+
+.dark .react-flow__controls-button:hover svg {
+  fill: #f3f4f6 !important;
+}
+
+/* Also target via the panel class for higher specificity */
+.dark .react-flow__panel.react-flow__controls button {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+}
+
+.dark .react-flow__panel.react-flow__controls button svg path {
+  fill: #d1d5db !important;
 }

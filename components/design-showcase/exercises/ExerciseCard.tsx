@@ -4,8 +4,8 @@ import { CardBox } from "@/shared/ui";
 import { Icon } from "@iconify/react";
 import { DifficultyBadge } from "./DifficultyBadge";
 import { MathRenderer } from "../shared/MathRenderer";
-import type { MockExercise } from "@/lib/mock-data";
-import { mockExercises } from "@/lib/mock-data";
+import type { MockExercise } from "../mock-data";
+import { mockExercises } from "../mock-data";
 
 interface ExerciseCardProps {
   exercise: MockExercise;

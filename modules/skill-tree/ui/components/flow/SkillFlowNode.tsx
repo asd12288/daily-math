@@ -68,14 +68,16 @@ function MasteryRing({ mastery, status }: { mastery: number; status: TopicStatus
 }
 
 function StatusIcon({ status }: { status: TopicStatus }) {
-  const iconConfig = {
-    locked: { icon: "tabler:lock", className: "text-gray-400" },
-    available: { icon: "tabler:circle", className: "text-gray-500" },
+  const iconConfig: Record<string, { icon: string; className: string }> = {
+    not_started: { icon: "tabler:circle", className: "text-gray-400" },
     in_progress: { icon: "tabler:player-play-filled", className: "text-primary-500" },
     mastered: { icon: "tabler:check", className: "text-success-500" },
+    // Legacy status fallbacks - map to not_started
+    locked: { icon: "tabler:circle", className: "text-gray-400" },
+    available: { icon: "tabler:circle", className: "text-gray-400" },
   };
 
-  const config = iconConfig[status];
+  const config = iconConfig[status] || iconConfig.not_started;
 
   return <Icon icon={config.icon} className={`text-xl ${config.className}`} />;
 }
@@ -97,13 +99,15 @@ function SkillNodeComponent({ data }: NodeProps) {
   const displayLabel = isRtl && labelHe ? labelHe : label;
   const displayBranchName = isRtl && branchNameHe ? branchNameHe : branchName;
 
-  const statusClasses = {
-    locked: "border-gray-300 dark:border-gray-600 opacity-60 cursor-not-allowed",
-    available:
+  const statusClasses: Record<string, string> = {
+    not_started:
       "border-gray-400 dark:border-gray-500 hover:border-primary-400 hover:shadow-lg cursor-pointer",
     in_progress:
       "border-primary-500 shadow-lg shadow-primary-200/30 dark:shadow-primary-900/30 cursor-pointer",
     mastered: "border-success-500 bg-success-50/50 dark:bg-success-900/10 cursor-pointer",
+    // Legacy status fallbacks - map to not_started styling
+    locked: "border-gray-400 dark:border-gray-500 hover:border-primary-400 hover:shadow-lg cursor-pointer",
+    available: "border-gray-400 dark:border-gray-500 hover:border-primary-400 hover:shadow-lg cursor-pointer",
   };
 
   // Handle positions based on RTL
@@ -143,11 +147,9 @@ function SkillNodeComponent({ data }: NodeProps) {
               {displayLabel}
             </h4>
             <p className="text-xs text-gray-500 dark:text-gray-400">{displayBranchName}</p>
-            {status !== "locked" && (
-              <p className="text-xs font-medium mt-0.5" style={{ color: branchColor }}>
-                {mastery}%
-              </p>
-            )}
+            <p className="text-xs font-medium mt-0.5" style={{ color: branchColor }}>
+              {mastery}%
+            </p>
           </div>
         </div>
       </div>

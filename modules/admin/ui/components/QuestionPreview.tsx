@@ -7,14 +7,14 @@ import React from "react";
 import { Icon } from "@iconify/react";
 import { useTranslations } from "next-intl";
 import { Button, MathDisplay } from "@/shared/ui";
-import type { Exercise } from "@/lib/appwrite/types";
+import type { AdminExercise } from "@/lib/appwrite/types";
 import { getDifficultyColor, formatEstimatedTime } from "../../lib/utils";
 
 interface QuestionPreviewProps {
-  question: Exercise | null;
+  question: AdminExercise | null;
   isOpen: boolean;
   onClose: () => void;
-  onEdit?: (question: Exercise) => void;
+  onEdit?: (question: AdminExercise) => void;
 }
 
 export function QuestionPreview({
@@ -140,7 +140,9 @@ export function QuestionPreview({
                       className="text-warning-500 flex-shrink-0 mt-0.5"
                       height={18}
                     />
-                    <span className="text-gray-700 dark:text-gray-300">{hint}</span>
+                    <span className="text-gray-700 dark:text-gray-300">
+                      <MathDisplay content={hint} />
+                    </span>
                   </li>
                 ))}
               </ul>

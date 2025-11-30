@@ -209,3 +209,97 @@ export function useSubmitSessionAnswer() {
     data: mutation.data,
   };
 }
+
+/**
+ * Hook to complete a practice session with all results
+ * Syncs XP, updates streak, checks for level up
+ */
+export function useCompleteSession() {
+  const utils = trpc.useUtils();
+
+  const mutation = trpc.practice.completeSession.useMutation({
+    onSuccess: (_, variables) => {
+      // Invalidate session data
+      utils.practice.getSession.invalidate({ sessionId: variables.sessionId });
+      utils.practice.getActiveSessions.invalidate();
+      utils.practice.getSessionHistory.invalidate();
+
+      // Invalidate gamification data to reflect new XP/level/streak
+      utils.gamification.getStats.invalidate();
+
+      // Invalidate skill tree for updated mastery
+      utils.skillTree.getState.invalidate();
+
+      // Invalidate dashboard stats
+      utils.dashboard.getUserProfile.invalidate();
+      utils.dashboard.getStats.invalidate();
+    },
+  });
+
+  return {
+    completeSession: mutation.mutate,
+    completeSessionAsync: mutation.mutateAsync,
+    isCompleting: mutation.isPending,
+    error: mutation.error,
+    result: mutation.data,
+  };
+}
+
+// ========== Daily Generation & Notification Hooks ==========
+
+/**
+ * Hook to get the count of incomplete questions for today
+ * Used for sidebar badge and notifications
+ */
+export function useIncompleteCount() {
+  const query = trpc.practice.getIncompleteCount.useQuery(undefined, {
+    staleTime: 1000 * 30, // 30 seconds
+    refetchInterval: 1000 * 60, // Refresh every minute
+    refetchOnWindowFocus: true,
+  });
+
+  return {
+    count: query.data ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+  };
+}
+
+/**
+ * Hook to manually trigger daily set generation (for testing/dev)
+ */
+export function useTriggerDailyGeneration() {
+  const utils = trpc.useUtils();
+
+  const mutation = trpc.practice.triggerDailyGeneration.useMutation({
+    onSuccess: () => {
+      // Invalidate all related queries
+      utils.practice.getTodaySet.invalidate();
+      utils.practice.getIncompleteCount.invalidate();
+    },
+  });
+
+  return {
+    trigger: mutation.mutate,
+    triggerAsync: mutation.mutateAsync,
+    isTriggering: mutation.isPending,
+    error: mutation.error,
+    result: mutation.data,
+  };
+}
+
+/**
+ * Hook to manually trigger reminder email (for testing/dev)
+ */
+export function useTriggerReminderEmail() {
+  const mutation = trpc.practice.triggerReminderEmail.useMutation();
+
+  return {
+    trigger: mutation.mutate,
+    triggerAsync: mutation.mutateAsync,
+    isTriggering: mutation.isPending,
+    error: mutation.error,
+    result: mutation.data,
+  };
+}

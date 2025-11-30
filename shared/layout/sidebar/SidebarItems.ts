@@ -28,7 +28,7 @@ export const SidebarContent: SidebarSection[] = [
       },
       {
         id: "practice",
-        name: "dashboard.startPractice",
+        name: "nav.dailyPractice",
         icon: "tabler:pencil",
         url: "/practice",
         badge: "5",
@@ -45,12 +45,6 @@ export const SidebarContent: SidebarSection[] = [
         icon: "tabler:book",
         url: "/courses",
       },
-      {
-        id: "history",
-        name: "nav.history",
-        icon: "tabler:history",
-        url: "/history",
-      },
     ],
   },
   {
@@ -61,12 +55,6 @@ export const SidebarContent: SidebarSection[] = [
         name: "nav.settings",
         icon: "tabler:settings",
         url: "/settings",
-      },
-      {
-        id: "profile",
-        name: "nav.profile",
-        icon: "tabler:user",
-        url: "/profile",
       },
     ],
   },

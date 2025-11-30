@@ -2,7 +2,7 @@
 
 import { CardBox } from "@/shared/ui";
 import { Icon } from "@iconify/react";
-import { mockAIAnalysis } from "@/lib/mock-data";
+import { mockAIAnalysis } from "../mock-data";
 
 interface AIAnalysisCardProps {
   analysis?: typeof mockAIAnalysis;

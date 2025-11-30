@@ -3,7 +3,7 @@
 import { CardBox } from "@/shared/ui";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
-import { mockUser } from "@/lib/mock-data";
+import { mockUser } from "../mock-data";
 
 interface ExerciseCountSliderProps {
   value?: number;

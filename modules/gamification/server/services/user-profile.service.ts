@@ -187,18 +187,23 @@ export class UserProfileService {
         }
       }
 
-      // Update profile
+      // Check if this is a new longest streak
+      const longestStreak = profile.longestStreak || 0;
+      const newLongestStreak = Math.max(longestStreak, newStreak);
+
+      // Update profile with streak and longest streak
       await databases.updateDocument(
         APPWRITE_CONFIG.databaseId,
         APPWRITE_CONFIG.collections.usersProfile,
         profile.$id,
         {
           currentStreak: newStreak,
+          longestStreak: newLongestStreak,
           lastPracticeDate: new Date().toISOString(),
         }
       );
 
-      console.log(`[UserProfile] Updated streak for user ${userId}: ${newStreak} days`);
+      console.log(`[UserProfile] Updated streak for user ${userId}: ${newStreak} days (longest: ${newLongestStreak})`);
 
       return { success: true, currentStreak: newStreak, streakContinued };
     } catch (error) {
@@ -214,6 +219,7 @@ export class UserProfileService {
     totalXp: number;
     currentLevel: number;
     currentStreak: number;
+    longestStreak: number;
     levelTitle: string;
     levelTitleHe: string;
     xpToNextLevel: number;
@@ -239,6 +245,7 @@ export class UserProfileService {
       const totalXp = profile.totalXp || 0;
       const currentLevel = profile.currentLevel || 1;
       const currentStreak = profile.currentStreak || 0;
+      const longestStreak = profile.longestStreak || 0;
 
       const levelInfo = getLevelInfo(currentLevel);
       const nextLevelXp = getXpForNextLevel(currentLevel);
@@ -253,6 +260,7 @@ export class UserProfileService {
         totalXp,
         currentLevel,
         currentStreak,
+        longestStreak,
         levelTitle: levelInfo.title,
         levelTitleHe: levelInfo.titleHe,
         xpToNextLevel: Math.max(0, xpToNextLevel),
@@ -263,4 +271,82 @@ export class UserProfileService {
       return null;
     }
   }
+}
+
+/**
+ * XP Bonus calculation utilities
+ */
+export const XP_BASE = {
+  questionCorrect: 10,       // Base XP for correct answer
+  dailySetComplete: 25,      // Bonus for completing daily set
+  streakBonus: 5,            // Per day in streak (e.g., 7-day streak = +35 XP)
+  perfectDayBonus: 15,       // All exercises correct
+} as const;
+
+export const DIFFICULTY_MULTIPLIERS = {
+  easy: 1,
+  medium: 1.5,
+  hard: 2,
+} as const;
+
+/**
+ * Calculate XP for a question based on difficulty and correctness
+ */
+export function calculateQuestionXp(
+  difficulty: "easy" | "medium" | "hard",
+  isCorrect: boolean
+): number {
+  if (!isCorrect) return 0;
+  return Math.round(XP_BASE.questionCorrect * DIFFICULTY_MULTIPLIERS[difficulty]);
+}
+
+/**
+ * Calculate streak bonus XP
+ */
+export function calculateStreakBonus(streakDays: number): number {
+  // Streak bonus: 5 XP per day in streak, max 50 XP
+  return Math.min(streakDays * XP_BASE.streakBonus, 50);
+}
+
+/**
+ * Calculate total XP for completing a daily set
+ */
+export function calculateDailySetXp(params: {
+  questionsCorrect: number;
+  totalQuestions: number;
+  currentStreak: number;
+  difficulties: ("easy" | "medium" | "hard")[];
+}): {
+  baseXp: number;
+  completionBonus: number;
+  streakBonus: number;
+  perfectBonus: number;
+  totalXp: number;
+} {
+  const { questionsCorrect, totalQuestions, currentStreak, difficulties } = params;
+
+  // Base XP from questions (10 per correct, multiplied by difficulty)
+  let baseXp = 0;
+  for (let i = 0; i < questionsCorrect && i < difficulties.length; i++) {
+    baseXp += calculateQuestionXp(difficulties[i], true);
+  }
+
+  // Completion bonus for finishing daily set
+  const completionBonus = XP_BASE.dailySetComplete;
+
+  // Streak bonus
+  const streakBonus = calculateStreakBonus(currentStreak);
+
+  // Perfect day bonus (all correct)
+  const perfectBonus = questionsCorrect === totalQuestions ? XP_BASE.perfectDayBonus : 0;
+
+  const totalXp = baseXp + completionBonus + streakBonus + perfectBonus;
+
+  return {
+    baseXp,
+    completionBonus,
+    streakBonus,
+    perfectBonus,
+    totalXp,
+  };
 }

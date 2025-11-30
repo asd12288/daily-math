@@ -6,17 +6,18 @@
 import React from "react";
 import { Icon } from "@iconify/react";
 import { useTranslations } from "next-intl";
-import type { Exercise } from "@/lib/appwrite/types";
+import { MathDisplay } from "@/shared/ui";
+import type { AdminExercise } from "@/lib/appwrite/types";
 import { getDifficultyColor, truncateText } from "../../lib/utils";
 
 interface QuestionTableProps {
-  questions: Exercise[];
+  questions: AdminExercise[];
   isLoading: boolean;
   selectedIds: string[];
   onSelectIds: (ids: string[]) => void;
-  onEdit: (question: Exercise) => void;
+  onEdit: (question: AdminExercise) => void;
   onDelete: (questionId: string) => void;
-  onView: (question: Exercise) => void;
+  onView: (question: AdminExercise) => void;
 }
 
 export function QuestionTable({
@@ -138,9 +139,9 @@ export function QuestionTable({
                 {/* Question */}
                 <td className="px-4 py-3">
                   <div className="max-w-md">
-                    <p className="text-sm text-gray-900 dark:text-white font-medium">
-                      {truncateText(question.question, 80)}
-                    </p>
+                    <div className="text-sm text-gray-900 dark:text-white font-medium">
+                      <MathDisplay content={truncateText(question.question, 80)} />
+                    </div>
                     {question.tags && question.tags.length > 0 && (
                       <div className="mt-1 flex gap-1 flex-wrap">
                         {question.tags.slice(0, 3).map((tag, i) => (

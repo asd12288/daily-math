@@ -29,7 +29,8 @@ export interface DailyGenerationResult {
 export async function generateDailyProblems(
   userId: string,
   focusTopicId: string,
-  _config: DailySetConfig = DEFAULT_DAILY_SET_CONFIG
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  config: DailySetConfig = DEFAULT_DAILY_SET_CONFIG
 ): Promise<DailyGenerationResult> {
   const focusTopic = getTopicById(focusTopicId) || TOPICS[0];
 
@@ -111,6 +112,7 @@ function questionToProblem(
     questionTextHe: question.questionTextHe,
     questionLatex: extractLatex(question.questionText),
     correctAnswer: question.correctAnswer,
+    answerType: question.answerType,
     solutionSteps: question.solutionSteps,
     solutionStepsHe: question.solutionStepsHe,
     hint: question.hint,
@@ -232,6 +234,7 @@ function createPlaceholderProblem(
     questionTextHe: placeholder.textHe,
     questionLatex: "",
     correctAnswer: placeholder.answer,
+    answerType: "expression" as const,
     solutionSteps: [
       "Step 1: Identify the problem type",
       "Step 2: Apply the appropriate method",
@@ -293,6 +296,7 @@ export async function generateTopicProblems(
         questionTextHe: question.questionTextHe,
         questionLatex: extractLatex(question.questionText),
         correctAnswer: question.correctAnswer,
+        answerType: question.answerType,
         solutionSteps: question.solutionSteps,
         solutionStepsHe: question.solutionStepsHe,
         hint: question.hint,

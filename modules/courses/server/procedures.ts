@@ -86,4 +86,31 @@ export const coursesRouter = createTRPCRouter({
     .query(async ({ input }) => {
       return coursesService.getExercisesForSession(input.topicId, input.excludeIds);
     }),
+
+  /**
+   * Enroll in a course
+   */
+  enroll: protectedProcedure
+    .input(z.object({ courseId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const success = await coursesService.enrollInCourse(ctx.session.userId, input.courseId);
+      return { success };
+    }),
+
+  /**
+   * Unenroll from a course
+   */
+  unenroll: protectedProcedure
+    .input(z.object({ courseId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const success = await coursesService.unenrollFromCourse(ctx.session.userId, input.courseId);
+      return { success };
+    }),
+
+  /**
+   * Get enrolled course IDs
+   */
+  getEnrolledIds: protectedProcedure.query(async ({ ctx }) => {
+    return coursesService.getEnrolledCourseIds(ctx.session.userId);
+  }),
 });

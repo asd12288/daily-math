@@ -23,10 +23,10 @@
   },
   "nav": {
     "home": "בית",
+    "dailyPractice": "תרגול יומי",
     "courses": "קורסים",
     "history": "היסטוריה",
     "settings": "הגדרות",
-    "profile": "פרופיל",
     "devDesign": "מערכת עיצוב",
     "devAI": "בדיקת AI",
     "adminQuestions": "בנק שאלות"
@@ -74,6 +74,7 @@
     "welcome": "בוקר טוב",
     "todaysSet": "הסט של היום",
     "exercises": "תרגילים",
+    "exercise": "תרגיל",
     "minutes": "דקות",
     "startPractice": "התחל תרגול",
     "yourProgress": "ההתקדמות שלך",
@@ -161,11 +162,46 @@
     "questions": "שאלות"
   },
   "courses": {
-    "title": "בחר את הקורסים שלך",
-    "subtitle": "בחר את הנושאים שתרצה לתרגל יומיום",
+    "title": "קורסים",
+    "subtitle": "נהל את הקורסים שלך וגלה קורסים חדשים",
     "topics": "נושאים",
     "comingSoon": "בקרוב",
-    "savePreferences": "שמור העדפות"
+    "savePreferences": "שמור העדפות",
+    "tabs": {
+      "myCourses": "הקורסים שלי",
+      "explore": "גלה קורסים"
+    },
+    "stats": {
+      "enrolled": "קורסים רשומים",
+      "topicsMastered": "נושאים הושלמו",
+      "avgProgress": "התקדמות ממוצעת",
+      "available": "קורסים נוספים"
+    },
+    "empty": {
+      "noEnrolled": "אין קורסים רשומים",
+      "noEnrolledDesc": "גלה קורסים והירשם כדי להתחיל ללמוד",
+      "exploreCourses": "גלה קורסים",
+      "allEnrolled": "רשום לכל הקורסים!",
+      "allEnrolledDesc": "אתה רשום לכל הקורסים הזמינים"
+    },
+    "explore": {
+      "enrollNow": "הירשם לקורס"
+    },
+    "settings": {
+      "title": "הגדרות הקורס",
+      "dailyQuestions": "שאלות יומיות",
+      "dailyQuestionsDesc": "תתרגל {count} שאלות ביום לקורס זה",
+      "difficultyLevel": "רמת קושי",
+      "adaptive": "מותאם אישית",
+      "adaptiveDesc": "מותאם אישית מתאים את הקושי לפי הביצועים שלך",
+      "dailyReminders": "תזכורות יומיות",
+      "dailyRemindersDesc": "קבל התראה כשהגיע הזמן לתרגל",
+      "moreSettings": "עוד הגדרות מגיעות בקרוב!",
+      "unenroll": "בטל הרשמה לקורס",
+      "unenrollConfirm": "האם אתה בטוח? ההתקדמות שלך תישמר.",
+      "unenrollButton": "בטל הרשמה",
+      "saveSettings": "שמור"
+    }
   },
   "settings": {
     "title": "הגדרות",

@@ -11,13 +11,13 @@ import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { Button } from "@/shared/ui";
 import { questionFormSchema } from "../../../lib/validation";
-import type { Exercise } from "@/lib/appwrite/types";
+import type { AdminExercise } from "@/lib/appwrite/types";
 
 // Infer the form input type from the schema
 type QuestionFormData = z.infer<typeof questionFormSchema>;
 
 interface QuestionFormProps {
-  initialData?: Exercise;
+  initialData?: AdminExercise;
   courses: { id: string; name: string }[];
   topics: { id: string; name: string; courseId: string }[];
   onSubmit: (data: QuestionFormData) => void;

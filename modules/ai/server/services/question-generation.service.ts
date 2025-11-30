@@ -14,7 +14,18 @@ import type {
   GeneratedQuestion,
   QuestionGenerationRequest,
   TopicContext,
+  ExerciseCreateData,
+  ExerciseSolutionCreateData,
 } from "../../types";
+
+/**
+ * XP rewards by difficulty
+ */
+const XP_BY_DIFFICULTY = {
+  easy: 10,
+  medium: 15,
+  hard: 20,
+} as const;
 
 /**
  * Zod schema for AI-generated question
@@ -24,6 +35,11 @@ const generatedQuestionSchema = z.object({
   correctAnswer: z
     .string()
     .describe("The exact correct answer (number, expression, or value)"),
+  answerType: z
+    .enum(["numeric", "expression", "proof", "open"])
+    .describe(
+      "Type of answer: 'numeric' for single numbers, 'expression' for algebraic expressions, 'proof' for proofs/derivations, 'open' for free-form answers"
+    ),
   solutionSteps: z
     .array(z.string())
     .min(2)
@@ -85,7 +101,7 @@ function selectQuestionType(
 export async function generateQuestion(
   request: QuestionGenerationRequest & { userId?: string }
 ): Promise<GeneratedQuestion> {
-  const { topicId, difficulty, questionType, locale: _locale = "en", userId } = request;
+  const { topicId, difficulty, questionType, userId } = request;
 
   // Get topic context
   const topicContext = getTopicContext(topicId);
@@ -153,12 +169,14 @@ Provide natural Hebrew translations suitable for Israeli university students.`;
       questionText: englishQuestion.questionText,
       questionTextHe: hebrewContent.questionTextHe,
       correctAnswer: englishQuestion.correctAnswer,
+      answerType: englishQuestion.answerType,
       solutionSteps: englishQuestion.solutionSteps,
       solutionStepsHe: hebrewContent.solutionStepsHe,
       hint: englishQuestion.hint,
       hintHe: hebrewContent.hintHe,
       difficulty,
       estimatedMinutes: englishQuestion.estimatedMinutes,
+      xpReward: XP_BY_DIFFICULTY[difficulty],
     };
   } catch (error) {
     console.error("Question generation failed:", error);
@@ -210,4 +228,50 @@ export async function generateQuestionWithRetry(
   }
 
   throw lastError || new Error("Question generation failed after retries");
+}
+
+/**
+ * Convert a generated question to exercise data for DB storage
+ */
+export function toExerciseCreateData(
+  generated: GeneratedQuestion,
+  courseId: string,
+  topicId: string,
+  modelName: string = "gemini-2.0-flash"
+): ExerciseCreateData {
+  return {
+    courseId,
+    topicId,
+    question: generated.questionText,
+    questionHe: generated.questionTextHe,
+    difficulty: generated.difficulty,
+    xpReward: generated.xpReward,
+    answer: generated.correctAnswer,
+    answerType: generated.answerType,
+    tip: generated.hint,
+    tipHe: generated.hintHe,
+    estimatedMinutes: generated.estimatedMinutes,
+    isActive: true,
+    generatedBy: modelName,
+    generatedAt: new Date().toISOString(),
+    timesUsed: 0,
+  };
+}
+
+/**
+ * Convert a generated question to solution data for DB storage
+ */
+export function toSolutionCreateData(
+  generated: GeneratedQuestion,
+  exerciseId: string
+): ExerciseSolutionCreateData {
+  // Create a full solution text from the steps
+  const solutionText = generated.solutionSteps.join("\n");
+
+  return {
+    exerciseId,
+    solution: solutionText,
+    steps: JSON.stringify(generated.solutionSteps),
+    stepsHe: JSON.stringify(generated.solutionStepsHe),
+  };
 }

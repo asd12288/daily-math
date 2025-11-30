@@ -4,7 +4,7 @@ import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { Icon } from "@iconify/react";
 
-export type TopicStatus = "locked" | "available" | "in_progress" | "mastered";
+export type TopicStatus = "not_started" | "in_progress" | "mastered";
 
 export interface SkillNodeData {
   label: string;
@@ -64,8 +64,7 @@ function MasteryRing({ mastery, status }: { mastery: number; status: TopicStatus
 
 function StatusIcon({ status }: { status: TopicStatus }) {
   const iconConfig = {
-    locked: { icon: "tabler:lock", className: "text-gray-400" },
-    available: { icon: "tabler:circle", className: "text-gray-500" },
+    not_started: { icon: "tabler:circle", className: "text-gray-400" },
     in_progress: { icon: "tabler:loader-2", className: "text-primary-500 animate-spin" },
     mastered: { icon: "tabler:check", className: "text-success-500" },
   };
@@ -80,8 +79,7 @@ function SkillNodeComponent({ data }: NodeProps) {
   const { label, status, mastery, branchColor, branchName } = nodeData;
 
   const statusClasses = {
-    locked: "border-gray-300 dark:border-gray-600 opacity-60 cursor-not-allowed",
-    available:
+    not_started:
       "border-gray-400 dark:border-gray-500 hover:border-primary-400 hover:shadow-lg cursor-pointer",
     in_progress:
       "border-primary-500 shadow-lg shadow-primary-200/30 dark:shadow-primary-900/30 cursor-pointer",
@@ -120,11 +118,9 @@ function SkillNodeComponent({ data }: NodeProps) {
               {label}
             </h4>
             <p className="text-xs text-gray-500 dark:text-gray-400">{branchName}</p>
-            {status !== "locked" && (
-              <p className="text-xs font-medium mt-0.5" style={{ color: branchColor }}>
-                {mastery}% mastery
-              </p>
-            )}
+            <p className="text-xs font-medium mt-0.5" style={{ color: branchColor }}>
+              {mastery}% mastery
+            </p>
           </div>
         </div>
       </div>

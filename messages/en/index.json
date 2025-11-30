@@ -23,10 +23,10 @@
   },
   "nav": {
     "home": "Home",
+    "dailyPractice": "Daily Practice",
     "courses": "Courses",
     "history": "History",
     "settings": "Settings",
-    "profile": "Profile",
     "devDesign": "Design System",
     "devAI": "AI Testing",
     "adminQuestions": "Question Bank"
@@ -74,6 +74,7 @@
     "welcome": "Good morning",
     "todaysSet": "Today's Set",
     "exercises": "exercises",
+    "exercise": "Exercise",
     "minutes": "min",
     "startPractice": "Start Practice",
     "yourProgress": "Your Progress",
@@ -161,11 +162,46 @@
     "questions": "questions"
   },
   "courses": {
-    "title": "Select Your Courses",
-    "subtitle": "Choose the subjects you want to practice daily",
+    "title": "Courses",
+    "subtitle": "Manage your enrolled courses and discover new ones",
     "topics": "topics",
     "comingSoon": "Coming Soon",
-    "savePreferences": "Save Preferences"
+    "savePreferences": "Save Preferences",
+    "tabs": {
+      "myCourses": "My Courses",
+      "explore": "Explore"
+    },
+    "stats": {
+      "enrolled": "Enrolled",
+      "topicsMastered": "Topics Mastered",
+      "avgProgress": "Avg Progress",
+      "available": "Available"
+    },
+    "empty": {
+      "noEnrolled": "No Enrolled Courses",
+      "noEnrolledDesc": "Explore courses and enroll to start learning",
+      "exploreCourses": "Explore Courses",
+      "allEnrolled": "Enrolled in All Courses!",
+      "allEnrolledDesc": "You're enrolled in all available courses"
+    },
+    "explore": {
+      "enrollNow": "Enroll Now"
+    },
+    "settings": {
+      "title": "Course Settings",
+      "dailyQuestions": "Daily Questions",
+      "dailyQuestionsDesc": "Practice {count} questions per day for this course",
+      "difficultyLevel": "Difficulty Level",
+      "adaptive": "Adaptive",
+      "adaptiveDesc": "Adaptive adjusts difficulty based on your performance",
+      "dailyReminders": "Daily Reminders",
+      "dailyRemindersDesc": "Get notified when it's time to practice",
+      "moreSettings": "More settings coming soon!",
+      "unenroll": "Unenroll from Course",
+      "unenrollConfirm": "Are you sure? Your progress will be saved.",
+      "unenrollButton": "Unenroll",
+      "saveSettings": "Save Settings"
+    }
   },
   "settings": {
     "title": "Settings",

@@ -42,14 +42,13 @@ export function BranchCard({
 
   const name = locale === "he" ? branch.nameHe : branch.name;
   const gradientClass = BRANCH_COLORS[branch.color] || BRANCH_COLORS.primary;
-  // Light color class available for future hover/focus states
-  const _lightClass = BRANCH_LIGHT_COLORS[branch.color] || BRANCH_LIGHT_COLORS.primary;
+  void BRANCH_LIGHT_COLORS; // Reserved for future hover/focus states
 
-  const allLocked = branch.topics.every((t) => t.status === "locked");
+  const allNotStarted = branch.topics.every((t) => t.status === "not_started");
   const hasInProgress = branch.topics.some((t) => t.status === "in_progress");
 
   return (
-    <Card className={`overflow-hidden ${allLocked ? "opacity-60" : ""}`}>
+    <Card className={`overflow-hidden ${allNotStarted ? "opacity-60" : ""}`}>
       {/* Branch Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}

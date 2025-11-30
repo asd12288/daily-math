@@ -22,15 +22,15 @@ export function PracticeView() {
 
   // Fetch daily set from backend
   const { dailySet, isLoading, error, refetch } = useTodaySet();
-  const { submitAnswerAsync, isSubmitting: _isSubmitting } = useSubmitAnswer();
+  const { submitAnswerAsync } = useSubmitAnswer();
 
   // Fetch user profile for streak display
   const { data: userProfile } = trpc.dashboard.getUserProfile.useQuery();
 
   const [viewMode, setViewMode] = useState<ViewMode>("loading");
   const [results, setResults] = useState<WorksheetResultsType | null>(null);
-  // uploadedImage state tracked for future use (image upload to storage)
-  const [_uploadedImage, setUploadedImage] = useState<File | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [submitProgress, setSubmitProgress] = useState({ current: 0, total: 0 });
 
   // Track previous state to avoid synchronous setState in effect

@@ -205,7 +205,8 @@ export class DiagnosticService {
    */
   static async completeOnboarding(
     userId: string,
-    _preferences: { dailyGoal: number; reminderTime: string | null }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    preferences: { dailyGoal: number; reminderTime: string | null }
   ): Promise<void> {
     const { databases } = await createAdminClient();
 
@@ -405,14 +406,9 @@ export class DiagnosticService {
     // Mark mastered topics in the skill tree
     for (const topicResult of result.topicResults) {
       if (topicResult.status === "mastered") {
-        // Add some initial progress for mastered topics
-        for (let i = 0; i < 5; i++) {
-          await SkillTreeService.updateProgress(
-            userId,
-            topicResult.topicId,
-            true
-          );
-        }
+        // Use setTopicMastered to properly mark as mastered
+        // This bypasses normal mastery requirements since user demonstrated knowledge
+        await SkillTreeService.setTopicMastered(userId, topicResult.topicId);
       }
     }
   }

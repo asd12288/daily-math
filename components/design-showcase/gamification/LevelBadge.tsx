@@ -1,7 +1,7 @@
 "use client";
 
 import { Icon } from "@iconify/react";
-import { mockUser, mockLevels } from "@/lib/mock-data";
+import { mockUser, mockLevels } from "../mock-data";
 
 interface LevelBadgeProps {
   level?: number;

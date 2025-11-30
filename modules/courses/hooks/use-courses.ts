@@ -77,3 +77,54 @@ export function useSessionExercises(topicId: string, excludeIds: string[] = []) 
 
   return { exercises: exercises ?? [], isLoading, error, refetch };
 }
+
+/**
+ * Enroll in a course
+ */
+export function useEnrollCourse() {
+  const utils = trpc.useUtils();
+  const mutation = trpc.courses.enroll.useMutation({
+    onSuccess: () => {
+      // Invalidate courses with progress to refresh the list
+      utils.courses.getWithProgress.invalidate();
+      utils.courses.getEnrolledIds.invalidate();
+    },
+  });
+
+  return {
+    enroll: mutation.mutateAsync,
+    isEnrolling: mutation.isPending,
+    error: mutation.error,
+  };
+}
+
+/**
+ * Unenroll from a course
+ */
+export function useUnenrollCourse() {
+  const utils = trpc.useUtils();
+  const mutation = trpc.courses.unenroll.useMutation({
+    onSuccess: () => {
+      // Invalidate courses with progress to refresh the list
+      utils.courses.getWithProgress.invalidate();
+      utils.courses.getEnrolledIds.invalidate();
+    },
+  });
+
+  return {
+    unenroll: mutation.mutateAsync,
+    isUnenrolling: mutation.isPending,
+    error: mutation.error,
+  };
+}
+
+/**
+ * Get enrolled course IDs
+ */
+export function useEnrolledCourseIds() {
+  const { data, isLoading, error } = trpc.courses.getEnrolledIds.useQuery(undefined, {
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  return { enrolledIds: data ?? [], isLoading, error };
+}

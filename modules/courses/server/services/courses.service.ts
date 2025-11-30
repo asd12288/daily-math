@@ -9,7 +9,8 @@ import { BRANCHES, TOPICS } from "@/modules/skill-tree/config";
 import type { Course, CourseWithProgress, CourseDetailData, Exercise } from "../../types";
 import type { TopicProgress } from "@/modules/skill-tree/types";
 
-// Types for database course/topic structure
+// Types for database course/topic structure (for future use with Appwrite)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface DBCourse {
   $id: string;
   name: string;
@@ -103,6 +104,7 @@ export class CoursesService {
   async getCoursesWithProgress(userId: string): Promise<CourseWithProgress[]> {
     const courses = getActiveCourses();
     const progressMap = await this.getUserProgressMap(userId);
+    const enrolledCourseIds = await this.getEnrolledCourseIds(userId);
 
     return courses.map((course) => {
       const topics = this.getTopicsForCourse(course);
@@ -117,7 +119,7 @@ export class CoursesService {
         overallProgress: topics.length > 0
           ? Math.round((masteredTopics / topics.length) * 100)
           : 0,
-        isEnrolled: true, // For MVP, user is enrolled in all active courses
+        isEnrolled: enrolledCourseIds.includes(course.id),
       };
     });
   }
@@ -257,6 +259,113 @@ export class CoursesService {
       );
     } catch (error) {
       console.error("Failed to mark exercise used:", error);
+    }
+  }
+
+  /**
+   * Enroll user in a course
+   */
+  async enrollInCourse(userId: string, courseId: string): Promise<boolean> {
+    try {
+      const { databases } = await createAdminClient();
+
+      // Get user profile
+      const response = await databases.listDocuments(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.usersProfile,
+        [Query.equal("userId", userId)]
+      );
+
+      if (response.documents.length === 0) {
+        console.error("User profile not found");
+        return false;
+      }
+
+      const profile = response.documents[0];
+      const enrolledCourses: string[] = JSON.parse(profile.enrolledCourses || "[]");
+
+      // Check if already enrolled
+      if (enrolledCourses.includes(courseId)) {
+        return true; // Already enrolled
+      }
+
+      // Add course
+      enrolledCourses.push(courseId);
+
+      await databases.updateDocument(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.usersProfile,
+        profile.$id,
+        { enrolledCourses: JSON.stringify(enrolledCourses) }
+      );
+
+      return true;
+    } catch (error) {
+      console.error("Failed to enroll in course:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Unenroll user from a course
+   */
+  async unenrollFromCourse(userId: string, courseId: string): Promise<boolean> {
+    try {
+      const { databases } = await createAdminClient();
+
+      // Get user profile
+      const response = await databases.listDocuments(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.usersProfile,
+        [Query.equal("userId", userId)]
+      );
+
+      if (response.documents.length === 0) {
+        console.error("User profile not found");
+        return false;
+      }
+
+      const profile = response.documents[0];
+      const enrolledCourses: string[] = JSON.parse(profile.enrolledCourses || "[]");
+
+      // Remove course
+      const updatedCourses = enrolledCourses.filter((id) => id !== courseId);
+
+      await databases.updateDocument(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.usersProfile,
+        profile.$id,
+        { enrolledCourses: JSON.stringify(updatedCourses) }
+      );
+
+      return true;
+    } catch (error) {
+      console.error("Failed to unenroll from course:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Get user's enrolled course IDs
+   */
+  async getEnrolledCourseIds(userId: string): Promise<string[]> {
+    try {
+      const { databases } = await createAdminClient();
+
+      const response = await databases.listDocuments(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.usersProfile,
+        [Query.equal("userId", userId)]
+      );
+
+      if (response.documents.length === 0) {
+        return [];
+      }
+
+      return JSON.parse(response.documents[0].enrolledCourses || "[]");
+    } catch (error) {
+      console.error("Failed to get enrolled courses:", error);
+      return [];
     }
   }
 

@@ -67,8 +67,8 @@ export function getEdgeStyle(
   targetStatus: string,
   branchColor: string
 ): React.CSSProperties {
-  // If target is locked, show dashed gray line
-  if (targetStatus === "locked") {
+  // If target is not_started, show dashed gray line (visual hint only)
+  if (targetStatus === "not_started") {
     return {
       stroke: "#9ca3af",
       strokeWidth: 2,

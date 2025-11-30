@@ -88,7 +88,7 @@ function branchesToFlow(branches: SkillBranch[]): { nodes: Node[]; edges: Edge[]
               type: MarkerType.ArrowClosed,
               width: 15,
               height: 15,
-              color: topic.status === "locked" ? "#9ca3af" : branch.color,
+              color: topic.status === "not_started" ? "#9ca3af" : branch.color,
             },
           });
         }

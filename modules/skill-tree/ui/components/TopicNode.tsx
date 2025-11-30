@@ -6,7 +6,7 @@
 import React from "react";
 import { Icon } from "@iconify/react";
 import { useLocale } from "next-intl";
-import type { TopicWithProgress, TopicStatus } from "../../types";
+import type { TopicWithProgress } from "../../types";
 
 interface TopicNodeProps {
   topic: TopicWithProgress;
@@ -15,7 +15,7 @@ interface TopicNodeProps {
 }
 
 const STATUS_CONFIG: Record<
-  TopicStatus,
+  string,
   {
     icon: string;
     bgClass: string;
@@ -24,14 +24,7 @@ const STATUS_CONFIG: Record<
     iconClass: string;
   }
 > = {
-  locked: {
-    icon: "tabler:lock",
-    bgClass: "bg-gray-100 dark:bg-gray-800",
-    borderClass: "border-gray-200 dark:border-gray-700",
-    textClass: "text-gray-400 dark:text-gray-500",
-    iconClass: "text-gray-400 dark:text-gray-500",
-  },
-  available: {
+  not_started: {
     icon: "tabler:circle",
     bgClass: "bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800",
     borderClass: "border-gray-300 dark:border-gray-600 hover:border-primary-400",
@@ -52,16 +45,32 @@ const STATUS_CONFIG: Record<
     textClass: "text-success-700 dark:text-success-300",
     iconClass: "text-success-500",
   },
+  // Legacy status fallbacks
+  locked: {
+    icon: "tabler:circle",
+    bgClass: "bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800",
+    borderClass: "border-gray-300 dark:border-gray-600 hover:border-primary-400",
+    textClass: "text-gray-700 dark:text-gray-300",
+    iconClass: "text-gray-400 dark:text-gray-500",
+  },
+  available: {
+    icon: "tabler:circle",
+    bgClass: "bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800",
+    borderClass: "border-gray-300 dark:border-gray-600 hover:border-primary-400",
+    textClass: "text-gray-700 dark:text-gray-300",
+    iconClass: "text-gray-400 dark:text-gray-500",
+  },
 };
 
 export function TopicNode({ topic, onClick, compact = false }: TopicNodeProps) {
   const locale = useLocale();
-  const config = STATUS_CONFIG[topic.status];
+  const config = STATUS_CONFIG[topic.status] || STATUS_CONFIG.not_started;
 
   const name = locale === "he" ? topic.nameHe : topic.name;
   const description = locale === "he" ? topic.descriptionHe : topic.description;
 
-  const isClickable = topic.status !== "locked";
+  // All topics are now clickable
+  const isClickable = true;
 
   const handleClick = () => {
     if (isClickable && onClick) {
@@ -147,48 +156,38 @@ export function TopicNode({ topic, onClick, compact = false }: TopicNodeProps) {
             <h4 className={`font-semibold truncate ${config.textClass}`}>
               {name}
             </h4>
-            {topic.status !== "locked" && (
-              <span
-                className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                  topic.mastery >= 80
-                    ? "bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400"
-                    : topic.mastery >= 50
-                    ? "bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400"
-                    : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                }`}
-              >
-                {topic.mastery}%
-              </span>
-            )}
+            <span
+              className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                topic.mastery >= 80
+                  ? "bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-400"
+                  : topic.mastery >= 50
+                  ? "bg-warning-100 text-warning-700 dark:bg-warning-900/30 dark:text-warning-400"
+                  : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+              }`}
+            >
+              {topic.mastery}%
+            </span>
           </div>
 
-          <p
-            className={`text-sm mt-0.5 line-clamp-1 ${
-              topic.status === "locked"
-                ? "text-gray-400 dark:text-gray-500"
-                : "text-gray-500 dark:text-gray-400"
-            }`}
-          >
+          <p className="text-sm mt-0.5 line-clamp-1 text-gray-500 dark:text-gray-400">
             {description}
           </p>
 
           {/* Progress Bar */}
-          {topic.status !== "locked" && (
-            <div className="mt-2">
-              <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    topic.mastery >= 80
-                      ? "bg-success-500"
-                      : topic.mastery >= 50
-                      ? "bg-warning-500"
-                      : "bg-primary-500"
-                  }`}
-                  style={{ width: `${topic.mastery}%` }}
-                />
-              </div>
+          <div className="mt-2">
+            <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  topic.mastery >= 80
+                    ? "bg-success-500"
+                    : topic.mastery >= 50
+                    ? "bg-warning-500"
+                    : "bg-primary-500"
+                }`}
+                style={{ width: `${topic.mastery}%` }}
+              />
             </div>
-          )}
+          </div>
         </div>
 
         {/* Arrow for clickable items */}

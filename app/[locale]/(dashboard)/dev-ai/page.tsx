@@ -8,6 +8,11 @@ import { trpc } from "@/trpc/client";
 import { Button } from "@/shared/ui";
 import { Card, CardHeader, CardTitle, CardContent } from "@/shared/ui";
 import { Icon } from "@iconify/react";
+import {
+  useTodaySet,
+  useTriggerDailyGeneration,
+  useTriggerReminderEmail,
+} from "@/modules/practice/hooks";
 
 export default function AITestPage() {
   return (
@@ -25,6 +30,7 @@ export default function AITestPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <DailyGenerationTrigger />
         <ConnectionTest />
         <QuestionGenerator />
         <ImageAnalyzer />
@@ -599,6 +605,188 @@ function HintGenerator() {
             <p className="text-error-700 text-sm">
               {hintMutation.error.message}
             </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function DailyGenerationTrigger() {
+  const { dailySet, isLoading: isLoadingSet, refetch } = useTodaySet();
+  const {
+    trigger: triggerGeneration,
+    isTriggering: isGenerating,
+    result: generationResult,
+    error: generationError,
+  } = useTriggerDailyGeneration();
+  const {
+    trigger: triggerEmail,
+    isTriggering: isSendingEmail,
+    result: emailResult,
+    error: emailError,
+  } = useTriggerReminderEmail();
+
+  return (
+    <Card className="lg:col-span-2">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Icon icon="tabler:calendar-plus" height={20} />
+          Daily Generation Trigger
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-gray-500">
+          Manually trigger daily set generation and email notifications for
+          testing. This simulates what the cron jobs do automatically.
+        </p>
+
+        {/* Current Daily Set Status */}
+        <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            Current Daily Set Status
+          </h4>
+          {isLoadingSet ? (
+            <p className="text-sm text-gray-500">Loading...</p>
+          ) : dailySet ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <span className="text-xs text-gray-500">Date</span>
+                <p className="text-sm font-medium">{dailySet.date}</p>
+              </div>
+              <div>
+                <span className="text-xs text-gray-500">Problems</span>
+                <p className="text-sm font-medium">
+                  {dailySet.completedCount}/{dailySet.totalProblems}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs text-gray-500">Status</span>
+                <p
+                  className={`text-sm font-medium ${dailySet.isCompleted ? "text-success-600" : "text-warning-600"}`}
+                >
+                  {dailySet.isCompleted ? "Completed" : "In Progress"}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs text-gray-500">Focus Topic</span>
+                <p className="text-sm font-medium truncate">
+                  {dailySet.focusTopicName}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">
+              No daily set found. Click &quot;Generate Daily Set&quot; to
+              create one.
+            </p>
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-3">
+          <Button
+            onClick={() => triggerGeneration()}
+            isLoading={isGenerating}
+            variant="primary"
+          >
+            <Icon icon="tabler:sparkles" className="mr-2" height={18} />
+            Generate Daily Set
+          </Button>
+
+          <Button
+            onClick={() => triggerEmail()}
+            isLoading={isSendingEmail}
+            variant="outline"
+            disabled={!dailySet}
+          >
+            <Icon icon="tabler:mail" className="mr-2" height={18} />
+            Send Reminder Email
+          </Button>
+
+          <Button onClick={() => refetch()} variant="ghost">
+            <Icon icon="tabler:refresh" className="mr-2" height={18} />
+            Refresh Status
+          </Button>
+        </div>
+
+        {/* Generation Result */}
+        {generationResult && (
+          <div
+            className={`p-4 rounded-lg ${
+              generationResult.success
+                ? "bg-success-50 border border-success-200"
+                : "bg-error-50 border border-error-200"
+            }`}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <Icon
+                icon={
+                  generationResult.success ? "tabler:check" : "tabler:alert-circle"
+                }
+                className={
+                  generationResult.success ? "text-success-600" : "text-error-600"
+                }
+                height={20}
+              />
+              <span
+                className={`font-medium ${
+                  generationResult.success
+                    ? "text-success-700"
+                    : "text-error-700"
+                }`}
+              >
+                {generationResult.message}
+              </span>
+            </div>
+            {generationResult.dailySet && (
+              <div className="text-sm text-gray-600">
+                <p>
+                  Generated {generationResult.dailySet.totalProblems} problems
+                </p>
+                <p>Focus topic: {generationResult.dailySet.focusTopicName}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Email Result */}
+        {emailResult && (
+          <div
+            className={`p-4 rounded-lg ${
+              emailResult.success
+                ? "bg-success-50 border border-success-200"
+                : "bg-error-50 border border-error-200"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Icon
+                icon={emailResult.success ? "tabler:check" : "tabler:alert-circle"}
+                className={
+                  emailResult.success ? "text-success-600" : "text-error-600"
+                }
+                height={20}
+              />
+              <span
+                className={`font-medium ${
+                  emailResult.success ? "text-success-700" : "text-error-700"
+                }`}
+              >
+                {emailResult.message}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Errors */}
+        {generationError && (
+          <div className="p-4 rounded-lg bg-error-50 border border-error-200">
+            <p className="text-error-700 text-sm">{generationError.message}</p>
+          </div>
+        )}
+        {emailError && (
+          <div className="p-4 rounded-lg bg-error-50 border border-error-200">
+            <p className="text-error-700 text-sm">{emailError.message}</p>
           </div>
         )}
       </CardContent>

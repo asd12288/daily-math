@@ -109,7 +109,7 @@ export function SkillTreeFlowContainer({
 
 function SkillTreeSkeleton() {
   return (
-    <div className="h-[calc(100vh-220px)] min-h-[400px] w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 overflow-hidden animate-pulse">
+    <div className="h-full w-full bg-gray-100 dark:bg-gray-950 overflow-hidden animate-pulse">
       <div className="h-full w-full flex items-center justify-center">
         <div className="text-center">
           <Icon

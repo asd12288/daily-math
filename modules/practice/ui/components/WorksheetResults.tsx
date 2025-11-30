@@ -243,15 +243,9 @@ function ResultCard({
               {index + 1}
             </div>
             <div className="min-w-0">
-              <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                {questionText}
-              </p>
-              {problem.questionLatex && (
-                <MathDisplay
-                  content={problem.questionLatex}
-                  className="text-gray-900 dark:text-white font-medium"
-                />
-              )}
+              <div className="text-sm text-gray-900 dark:text-white font-medium">
+                <MathDisplay content={questionText} />
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
@@ -269,23 +263,23 @@ function ResultCard({
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                 {t("practice.yourAnswer")}
               </p>
-              <p
+              <div
                 className={`font-mono font-medium ${
                   result.isCorrect
                     ? "text-success-700 dark:text-success-300"
                     : "text-error-700 dark:text-error-300"
                 }`}
               >
-                {result.userAnswer || "—"}
-              </p>
+                {result.userAnswer ? <MathDisplay content={result.userAnswer} /> : "—"}
+              </div>
             </div>
             <div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                 {t("practice.correctAnswer")}
               </p>
-              <p className="font-mono font-medium text-success-700 dark:text-success-300">
-                {result.correctAnswer}
-              </p>
+              <div className="font-mono font-medium text-success-700 dark:text-success-300">
+                <MathDisplay content={result.correctAnswer} />
+              </div>
             </div>
           </div>
         )}

@@ -4,7 +4,7 @@ import { CardBox } from "@/shared/ui";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
 import { MathRenderer } from "../shared/MathRenderer";
-import { mockExercises } from "@/lib/mock-data";
+import { mockExercises } from "../mock-data";
 
 interface SolutionRevealProps {
   solution: string;

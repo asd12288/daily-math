@@ -2,7 +2,7 @@
 
 import { CardBox } from "@/shared/ui";
 import { Icon } from "@iconify/react";
-import { mockCourses } from "@/lib/mock-data";
+import { mockCourses } from "../mock-data";
 
 interface CourseCardProps {
   course: (typeof mockCourses)[0];

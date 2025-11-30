@@ -1,7 +1,7 @@
 "use client";
 
 import { Icon } from "@iconify/react";
-import { mockUser } from "@/lib/mock-data";
+import { mockUser } from "../mock-data";
 
 interface StreakCounterProps {
   streak?: number;

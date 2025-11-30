@@ -5,7 +5,7 @@ import { Icon } from "@iconify/react";
 interface TopicBadgeProps {
   topic: string;
   icon?: string;
-  variant?: "default" | "active" | "completed" | "locked";
+  variant?: "default" | "active" | "completed" | "not_started";
   size?: "sm" | "md";
 }
 
@@ -19,7 +19,7 @@ export function TopicBadge({
     default: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
     active: "bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300 ring-2 ring-primary-500",
     completed: "bg-success-100 text-success-700 dark:bg-success-900/30 dark:text-success-300",
-    locked: "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500",
+    not_started: "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
   };
 
   const sizeClasses = {
@@ -36,7 +36,7 @@ export function TopicBadge({
     default: null,
     active: "tabler:player-play-filled",
     completed: "tabler:circle-check-filled",
-    locked: "tabler:lock",
+    not_started: "tabler:circle",
   };
 
   return (
@@ -58,8 +58,8 @@ export function TopicList() {
     { name: "Limits", status: "completed" as const, progress: 100 },
     { name: "Derivatives", status: "completed" as const, progress: 100 },
     { name: "Chain Rule", status: "active" as const, progress: 60 },
-    { name: "Integrals", status: "locked" as const, progress: 0 },
-    { name: "Integration by Parts", status: "locked" as const, progress: 0 },
+    { name: "Integrals", status: "not_started" as const, progress: 0 },
+    { name: "Integration by Parts", status: "not_started" as const, progress: 0 },
   ];
 
   return (
@@ -68,7 +68,7 @@ export function TopicList() {
         <div
           key={topic.name}
           className={`flex items-center justify-between p-3 rounded-lg ${
-            topic.status === "locked"
+            topic.status === "not_started"
               ? "bg-gray-50 dark:bg-gray-800/50"
               : "bg-white dark:bg-gray-800"
           } border border-gray-200 dark:border-gray-700`}
@@ -89,14 +89,14 @@ export function TopicList() {
                     ? "tabler:check"
                     : topic.status === "active"
                     ? "tabler:player-play"
-                    : "tabler:lock"
+                    : "tabler:circle"
                 }
                 className="text-lg"
               />
             </div>
             <span
               className={`font-medium ${
-                topic.status === "locked" ? "text-gray-400" : "text-gray-900 dark:text-white"
+                topic.status === "not_started" ? "text-gray-500" : "text-gray-900 dark:text-white"
               }`}
             >
               {topic.name}
@@ -104,7 +104,7 @@ export function TopicList() {
           </div>
 
           <div className="flex items-center gap-3">
-            {topic.status !== "locked" && (
+            {topic.status !== "not_started" && (
               <div className="w-20 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full ${
@@ -132,7 +132,7 @@ export function TopicBadgeShowcase() {
           <TopicBadge topic="Derivatives" variant="default" />
           <TopicBadge topic="Chain Rule" variant="active" icon="tabler:flame" />
           <TopicBadge topic="Limits" variant="completed" />
-          <TopicBadge topic="Integration" variant="locked" />
+          <TopicBadge topic="Integration" variant="not_started" />
         </div>
       </div>
       <div>

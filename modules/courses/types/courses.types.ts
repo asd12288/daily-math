@@ -24,6 +24,30 @@ export interface CourseWithProgress extends Course {
   isEnrolled: boolean;
 }
 
+/**
+ * User settings for a specific course
+ * Controls daily practice configuration
+ */
+export interface CourseSettings {
+  courseId: string;
+  userId: string;
+  // Daily practice settings
+  dailyQuestionCount: number; // 1-10 (default: 5)
+  // Future settings (placeholders)
+  difficulty: "adaptive" | "easy" | "medium" | "hard"; // Default: adaptive
+  notificationsEnabled: boolean; // Default: true
+  reminderTime?: string; // HH:mm format (e.g., "09:00")
+}
+
+/**
+ * Default settings for new course enrollments
+ */
+export const DEFAULT_COURSE_SETTINGS: Omit<CourseSettings, "courseId" | "userId"> = {
+  dailyQuestionCount: 5,
+  difficulty: "adaptive",
+  notificationsEnabled: true,
+};
+
 export interface CourseDetailData {
   course: Course;
   branches: Branch[];

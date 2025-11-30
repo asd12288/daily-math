@@ -3,7 +3,7 @@
 import { CardBox } from "@/shared/ui";
 import { Icon } from "@iconify/react";
 import { useState } from "react";
-import { mockNotificationSettings } from "@/lib/mock-data";
+import { mockNotificationSettings } from "../mock-data";
 
 interface ToggleSwitchProps {
   enabled: boolean;

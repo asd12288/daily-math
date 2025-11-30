@@ -19,6 +19,7 @@ export const PRE_ALGEBRA_QUESTIONS: Problem[] = [
     questionTextHe: "פתור את המשוואה:",
     questionLatex: "$2x + 5 = 13$",
     correctAnswer: "4",
+    answerType: "numeric",
     solutionSteps: [
       "Subtract 5 from both sides: $2x + 5 - 5 = 13 - 5$",
       "Simplify: $2x = 8$",
@@ -47,6 +48,7 @@ export const PRE_ALGEBRA_QUESTIONS: Problem[] = [
     questionTextHe: "פשט:",
     questionLatex: "$\\frac{3}{4} + \\frac{1}{2}$",
     correctAnswer: "5/4",
+    answerType: "expression",
     solutionSteps: [
       "Find a common denominator (LCD = 4)",
       "Convert $\\frac{1}{2}$ to fourths: $\\frac{1}{2} = \\frac{2}{4}$",
@@ -75,6 +77,7 @@ export const PRE_ALGEBRA_QUESTIONS: Problem[] = [
     questionTextHe: "חשב:",
     questionLatex: "$3 + 4 \\times 2 - 1$",
     correctAnswer: "10",
+    answerType: "numeric",
     solutionSteps: [
       "Remember PEMDAS: Parentheses, Exponents, Multiplication/Division, Addition/Subtraction",
       "First, do multiplication: $4 \\times 2 = 8$",
@@ -103,6 +106,7 @@ export const PRE_ALGEBRA_QUESTIONS: Problem[] = [
     questionTextHe: "פתור את המשוואה:",
     questionLatex: "$-3x + 7 = 1$",
     correctAnswer: "2",
+    answerType: "numeric",
     solutionSteps: [
       "Subtract 7 from both sides: $-3x + 7 - 7 = 1 - 7$",
       "Simplify: $-3x = -6$",
@@ -131,6 +135,7 @@ export const PRE_ALGEBRA_QUESTIONS: Problem[] = [
     questionTextHe: "מספר כפול עצמו פלוס 3 שווה 11. מהו המספר?",
     questionLatex: "$2n + 3 = 11$",
     correctAnswer: "4",
+    answerType: "numeric",
     solutionSteps: [
       "Let $n$ be the unknown number",
       "\"A number doubled\" means $2n$",

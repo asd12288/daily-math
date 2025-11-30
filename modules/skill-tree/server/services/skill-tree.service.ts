@@ -17,6 +17,7 @@ import {
   type TopicStatus,
   calculateMastery,
   determineTopicStatus,
+  checkPrerequisitesMet,
   MASTERY_CONSTANTS,
 } from "../../types";
 
@@ -29,17 +30,16 @@ export class SkillTreeService {
     const progressMap = await this.getUserProgressMap(userId);
 
     // Build branches with topics and progress
+    // Note: All topics are unlocked - we just track progress and show recommendations
     const branches: BranchWithTopics[] = BRANCHES.map((branch) => {
       const branchTopics = getTopicsByBranch(branch.id);
 
       const topicsWithProgress: TopicWithProgress[] = branchTopics.map(
         (topic) => {
           const progress = progressMap.get(topic.id) || null;
-          const prerequisitesMet = this.checkPrerequisitesMet(
-            topic.prerequisites,
-            progressMap
-          );
-          const status = determineTopicStatus(progress, prerequisitesMet);
+          // Check prerequisites for UI recommendations only (not for locking)
+          const prereqCheck = checkPrerequisitesMet(topic.prerequisites, progressMap);
+          const status = determineTopicStatus(progress);
           const mastery = progress ? calculateMastery(progress) : 0;
 
           return {
@@ -47,7 +47,9 @@ export class SkillTreeService {
             progress,
             status,
             mastery,
-            isUnlocked: prerequisitesMet,
+            canPractice: true as const, // All topics always available
+            hasUnmetPrerequisites: !prereqCheck.met,
+            recommendedFirst: prereqCheck.unmetTopics,
           };
         }
       );
@@ -81,7 +83,7 @@ export class SkillTreeService {
     );
     const overallProgress = Math.round((totalMastered / totalTopics) * 100);
 
-    // Find current focus topic (first in_progress or first available)
+    // Find current focus topic (first in_progress or first not_started)
     let currentFocusTopic: string | null = null;
     for (const branch of branches) {
       for (const topic of branch.topics) {
@@ -93,10 +95,11 @@ export class SkillTreeService {
       if (currentFocusTopic) break;
     }
 
+    // If no in_progress topic, find first not_started topic
     if (!currentFocusTopic) {
       for (const branch of branches) {
         for (const topic of branch.topics) {
-          if (topic.status === "available") {
+          if (topic.status === "not_started") {
             currentFocusTopic = topic.id;
             break;
           }
@@ -126,11 +129,8 @@ export class SkillTreeService {
 
     const progressMap = await this.getUserProgressMap(userId);
     const progress = progressMap.get(topicId) || null;
-    const prerequisitesMet = this.checkPrerequisitesMet(
-      topic.prerequisites,
-      progressMap
-    );
-    const status = determineTopicStatus(progress, prerequisitesMet);
+    const prereqCheck = checkPrerequisitesMet(topic.prerequisites, progressMap);
+    const status = determineTopicStatus(progress);
     const mastery = progress ? calculateMastery(progress) : 0;
 
     return {
@@ -138,7 +138,9 @@ export class SkillTreeService {
       progress,
       status,
       mastery,
-      isUnlocked: prerequisitesMet,
+      canPractice: true as const,
+      hasUnmetPrerequisites: !prereqCheck.met,
+      recommendedFirst: prereqCheck.unmetTopics,
     };
   }
 
@@ -257,6 +259,84 @@ export class SkillTreeService {
   }
 
   /**
+   * Set a topic directly to mastered status (used for diagnostic results)
+   * Bypasses normal mastery requirements since user has demonstrated knowledge
+   */
+  static async setTopicMastered(
+    userId: string,
+    topicId: string
+  ): Promise<void> {
+    const { databases } = await createAdminClient();
+    const now = new Date();
+    const today = now.toISOString().split("T")[0];
+    const todayDatetime = now.toISOString();
+
+    // Create fake history to meet mastery requirements
+    // We use 3 "virtual" practice days to satisfy the REQUIRED_DAYS check
+    const virtualDays = [
+      today,
+      new Date(Date.now() - 86400000).toISOString().split("T")[0], // yesterday
+      new Date(Date.now() - 172800000).toISOString().split("T")[0], // 2 days ago
+    ];
+
+    const masteredProgress: TopicProgress = {
+      topicId,
+      userId,
+      status: "mastered",
+      mastery: 100,
+      correctAttempts: MASTERY_CONSTANTS.REQUIRED_CORRECT, // Meet requirement
+      totalAttempts: MASTERY_CONSTANTS.REQUIRED_CORRECT, // 100% accuracy
+      lastPracticed: todayDatetime,
+      daysPracticed: virtualDays,
+    };
+
+    try {
+      // Check if progress already exists
+      const existing = await databases.listDocuments(
+        process.env.APPWRITE_DATABASE_ID!,
+        process.env.APPWRITE_USER_PROGRESS_COLLECTION!,
+        [
+          Query.equal("userId", userId),
+          Query.equal("topicId", topicId),
+          Query.limit(1),
+        ]
+      );
+
+      if (existing.documents.length > 0) {
+        // Update existing document to mastered
+        await databases.updateDocument(
+          process.env.APPWRITE_DATABASE_ID!,
+          process.env.APPWRITE_USER_PROGRESS_COLLECTION!,
+          existing.documents[0].$id,
+          {
+            status: "mastered",
+            mastery: 100,
+            correctAttempts: masteredProgress.correctAttempts,
+            totalAttempts: masteredProgress.totalAttempts,
+            lastPracticed: todayDatetime,
+            daysPracticed: JSON.stringify(virtualDays),
+          }
+        );
+        console.log(`[SkillTree] Updated topic ${topicId} to mastered for user ${userId}`);
+      } else {
+        // Create new mastered progress document
+        await databases.createDocument(
+          process.env.APPWRITE_DATABASE_ID!,
+          process.env.APPWRITE_USER_PROGRESS_COLLECTION!,
+          ID.unique(),
+          {
+            ...masteredProgress,
+            daysPracticed: JSON.stringify(masteredProgress.daysPracticed),
+          }
+        );
+        console.log(`[SkillTree] Created mastered progress for user ${userId}, topic ${topicId}`);
+      }
+    } catch (error) {
+      console.error(`[SkillTree] Failed to set topic ${topicId} as mastered:`, error);
+    }
+  }
+
+  /**
    * Initialize skill tree for a new user (after diagnostic test)
    */
   static async initializeForUser(
@@ -264,20 +344,25 @@ export class SkillTreeService {
     diagnosticResults: { topicId: string; passed: boolean }[]
   ): Promise<void> {
     const { databases } = await createAdminClient();
-    const now = new Date();
-    const today = now.toISOString().split("T")[0];
-    const todayDatetime = now.toISOString();
+    void databases; // Used in setTopicMastered calls
 
     for (const result of diagnosticResults) {
+      // If passed, use setTopicMastered for proper mastery
+      if (result.passed) {
+        await this.setTopicMastered(userId, result.topicId);
+        continue;
+      }
+
+      // Not passed - create not_started record
       const progress: TopicProgress = {
         topicId: result.topicId,
         userId,
-        status: result.passed ? "available" : "available", // Both are available, but mastery differs
-        mastery: result.passed ? 50 : 0, // Passed diagnostic = 50% head start
-        correctAttempts: result.passed ? 5 : 0,
-        totalAttempts: 1,
-        lastPracticed: todayDatetime,
-        daysPracticed: [today],
+        status: "not_started",
+        mastery: 0,
+        correctAttempts: 0,
+        totalAttempts: 0,
+        lastPracticed: null,
+        daysPracticed: [],
       };
 
       try {
@@ -336,10 +421,20 @@ export class SkillTreeService {
         const daysPracticed = typeof daysPracticedRaw === "string"
           ? JSON.parse(daysPracticedRaw)
           : daysPracticedRaw;
+
+        // Map old status values to new ones
+        let status: TopicStatus = "not_started";
+        if (doc.status === "mastered") {
+          status = "mastered";
+        } else if (doc.status === "in_progress" || doc.status === "available" || doc.status === "locked") {
+          // If they have attempts, they're in_progress; otherwise not_started
+          status = doc.totalAttempts > 0 ? "in_progress" : "not_started";
+        }
+
         progressMap.set(doc.topicId, {
           topicId: doc.topicId,
           userId: doc.userId,
-          status: (doc.status as TopicStatus) || "available",
+          status,
           mastery: doc.mastery || 0,
           correctAttempts: doc.correctAttempts || 0,
           totalAttempts: doc.totalAttempts || 0,
@@ -355,25 +450,8 @@ export class SkillTreeService {
   }
 
   /**
-   * Check if all prerequisites for a topic are met
-   */
-  private static checkPrerequisitesMet(
-    prerequisites: string[],
-    progressMap: Map<string, TopicProgress>
-  ): boolean {
-    if (prerequisites.length === 0) return true;
-
-    return prerequisites.every((prereqId) => {
-      const progress = progressMap.get(prereqId);
-      if (!progress) return false;
-
-      // Prerequisite is met if mastery >= 50%
-      return progress.mastery >= MASTERY_CONSTANTS.UNLOCK_THRESHOLD * 100;
-    });
-  }
-
-  /**
    * Calculate status from progress
+   * Note: No more "locked" or "available" - just not_started, in_progress, mastered
    */
   private static calculateStatus(progress: TopicProgress): TopicStatus {
     if (
@@ -389,6 +467,6 @@ export class SkillTreeService {
       return "in_progress";
     }
 
-    return "available";
+    return "not_started";
   }
 }

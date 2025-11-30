@@ -3,7 +3,7 @@
 import { CardBox } from "@/shared/ui";
 import { Icon } from "@iconify/react";
 import { Progress } from "flowbite-react";
-import { mockUser, mockLevels } from "@/lib/mock-data";
+import { mockUser, mockLevels } from "../mock-data";
 
 export function ProgressCard() {
   const currentLevel = mockLevels.find((l) => l.level === mockUser.currentLevel)!;

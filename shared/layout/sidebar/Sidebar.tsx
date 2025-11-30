@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useContext } from "react";
+import React, { useContext, useMemo } from "react";
 import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import { Icon } from "@iconify/react";
@@ -11,6 +11,7 @@ import { DashboardContext, useUser } from "@/shared/context";
 import SidebarContent from "./SidebarItems";
 import Logo from "../Logo";
 import { useLogout } from "@/modules/auth";
+import { useIncompleteCount } from "@/modules/practice/hooks";
 
 export function Sidebar() {
   const t = useTranslations();
@@ -21,19 +22,33 @@ export function Sidebar() {
   // Get user data from context
   const { displayName, initials, levelTitle, isLoading, profile, role } = useUser();
 
+  // Get incomplete questions count for dynamic badge
+  const { count: incompleteCount } = useIncompleteCount();
+
   // Remove locale prefix from pathname for comparison
   const currentPath = pathname.replace(/^\/(en|he)/, "") || "/dashboard";
 
-  // Filter sidebar content based on user role
-  const filteredSidebarContent = SidebarContent
-    .filter((section) => !section.requiredRole || section.requiredRole === role)
-    .map((section) => ({
-      ...section,
-      children: section.children.filter(
-        (item) => !item.requiredRole || item.requiredRole === role
-      ),
-    }))
-    .filter((section) => section.children.length > 0);
+  // Filter sidebar content based on user role and add dynamic badges
+  const filteredSidebarContent = useMemo(() => {
+    return SidebarContent
+      .filter((section) => !section.requiredRole || section.requiredRole === role)
+      .map((section) => ({
+        ...section,
+        children: section.children
+          .filter((item) => !item.requiredRole || item.requiredRole === role)
+          .map((item) => {
+            // Override the "practice" item badge with dynamic count
+            if (item.id === "practice") {
+              return {
+                ...item,
+                badge: incompleteCount > 0 ? String(incompleteCount) : undefined,
+              };
+            }
+            return item;
+          }),
+      }))
+      .filter((section) => section.children.length > 0);
+  }, [role, incompleteCount]);
 
   return (
     <div className="hidden xl:block">

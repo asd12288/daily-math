@@ -6,7 +6,7 @@
 import React from "react";
 import { Icon } from "@iconify/react";
 import { useTranslations, useLocale } from "next-intl";
-import { Card, CardContent } from "@/shared/ui";
+import { Card, CardContent, MathDisplay } from "@/shared/ui";
 import type { Problem, ProblemSlot } from "../../types";
 import { SLOT_INFO } from "../../types";
 
@@ -92,18 +92,9 @@ export function ProblemCard({
       <Card className="bg-gray-50 dark:bg-gray-800/50 border-2 border-gray-200 dark:border-gray-700">
         <CardContent className="py-8">
           <div className="text-center">
-            <p className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-              {questionText}
-            </p>
-
-            {/* LaTeX display (if available) */}
-            {problem.questionLatex && (
-              <div className="mt-4 p-4 bg-white dark:bg-gray-900 rounded-xl inline-block">
-                <p className="text-2xl font-mono text-gray-900 dark:text-white">
-                  {problem.questionLatex}
-                </p>
-              </div>
-            )}
+            <div className="text-lg font-medium text-gray-900 dark:text-white">
+              <MathDisplay content={questionText} />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -144,7 +135,9 @@ function HintSection({ hint }: { hint?: string }) {
         <div className="p-4 bg-warning-50 dark:bg-warning-900/20 border border-warning-200 dark:border-warning-800 rounded-xl">
           <div className="flex items-start gap-2">
             <Icon icon="tabler:bulb" height={18} className="text-warning-600 dark:text-warning-400 mt-0.5" />
-            <p className="text-sm text-warning-800 dark:text-warning-200">{hint}</p>
+            <span className="text-sm text-warning-800 dark:text-warning-200">
+              <MathDisplay content={hint} />
+            </span>
           </div>
         </div>
       )}
@@ -176,10 +169,12 @@ function SolutionSection({
         <div className="space-y-2 mb-4">
           {steps.map((step, index) => (
             <div key={index} className="flex items-start gap-3">
-              <span className="w-6 h-6 rounded-full bg-success-200 dark:bg-success-800 text-success-800 dark:text-success-200 flex items-center justify-center text-xs font-medium">
+              <span className="w-6 h-6 rounded-full bg-success-200 dark:bg-success-800 text-success-800 dark:text-success-200 flex items-center justify-center text-xs font-medium shrink-0">
                 {index + 1}
               </span>
-              <p className="text-sm text-gray-700 dark:text-gray-300">{step}</p>
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                <MathDisplay content={step} />
+              </span>
             </div>
           ))}
         </div>
@@ -189,9 +184,9 @@ function SolutionSection({
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
             {t("practice.answer")}:
           </p>
-          <p className="text-lg font-mono font-semibold text-success-800 dark:text-success-200">
-            {problem.correctAnswer}
-          </p>
+          <div className="text-lg font-mono font-semibold text-success-800 dark:text-success-200">
+            <MathDisplay content={problem.correctAnswer} />
+          </div>
         </div>
       </CardContent>
     </Card>

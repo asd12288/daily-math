@@ -1,4 +1,5 @@
-// Mock data for design showcase components
+// Mock data for design showcase components ONLY
+// This data is used for UI visualization before real data is connected
 
 export const mockUser = {
   id: "user_123",
@@ -237,7 +238,8 @@ export const mockNotificationSettings = {
 };
 
 // Skill Tree Mock Data
-export type SkillTopicStatus = "locked" | "available" | "in_progress" | "mastered";
+// Using new status: not_started | in_progress | mastered (no more locked/available)
+export type SkillTopicStatus = "not_started" | "in_progress" | "mastered";
 
 export interface MockSkillTopic {
   id: string;
@@ -303,7 +305,7 @@ export const mockSkillBranches: MockSkillBranch[] = [
       {
         id: "vectors",
         name: "Vectors",
-        status: "available",
+        status: "in_progress",
         mastery: 20,
         prerequisites: ["linear-equations"],
         description: "Vector operations and geometry",
@@ -311,7 +313,7 @@ export const mockSkillBranches: MockSkillBranch[] = [
       {
         id: "matrices",
         name: "Matrices",
-        status: "locked",
+        status: "not_started",
         mastery: 0,
         prerequisites: ["vectors"],
         description: "Matrix operations and properties",
@@ -319,7 +321,7 @@ export const mockSkillBranches: MockSkillBranch[] = [
       {
         id: "eigenvalues",
         name: "Eigenvalues",
-        status: "locked",
+        status: "not_started",
         mastery: 0,
         prerequisites: ["matrices"],
         description: "Eigenvalues and eigenvectors",
@@ -342,7 +344,7 @@ export const mockSkillBranches: MockSkillBranch[] = [
       {
         id: "derivatives",
         name: "Derivatives",
-        status: "available",
+        status: "in_progress",
         mastery: 10,
         prerequisites: ["limits"],
         description: "Differentiation techniques",
@@ -350,7 +352,7 @@ export const mockSkillBranches: MockSkillBranch[] = [
       {
         id: "integrals",
         name: "Integrals",
-        status: "locked",
+        status: "not_started",
         mastery: 0,
         prerequisites: ["derivatives"],
         description: "Integration and antiderivatives",
@@ -358,7 +360,7 @@ export const mockSkillBranches: MockSkillBranch[] = [
       {
         id: "applications",
         name: "Applications",
-        status: "locked",
+        status: "not_started",
         mastery: 0,
         prerequisites: ["integrals", "derivatives"],
         description: "Real-world calculus applications",
@@ -389,7 +391,7 @@ export const mockSkillBranches: MockSkillBranch[] = [
       {
         id: "roots",
         name: "Finding Roots",
-        status: "available",
+        status: "in_progress",
         mastery: 15,
         prerequisites: ["factoring"],
         description: "Finding polynomial roots",
@@ -404,7 +406,7 @@ export const mockSkillBranches: MockSkillBranch[] = [
       {
         id: "quadratic-equations",
         name: "Quadratic Equations",
-        status: "available",
+        status: "in_progress",
         mastery: 30,
         prerequisites: ["equations", "polynomial-basics"],
         description: "Solving quadratic equations",
@@ -412,7 +414,7 @@ export const mockSkillBranches: MockSkillBranch[] = [
       {
         id: "quadratic-formula",
         name: "Quadratic Formula",
-        status: "locked",
+        status: "not_started",
         mastery: 0,
         prerequisites: ["quadratic-equations"],
         description: "The quadratic formula",
@@ -420,7 +422,7 @@ export const mockSkillBranches: MockSkillBranch[] = [
       {
         id: "parabolas",
         name: "Parabolas",
-        status: "locked",
+        status: "not_started",
         mastery: 0,
         prerequisites: ["quadratic-formula"],
         description: "Graphing and analyzing parabolas",

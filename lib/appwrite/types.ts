@@ -78,36 +78,29 @@ export interface CourseTopic {
   descriptionHe?: string;
 }
 
-// Exercise Collection
+// Exercise Collection - matches actual Appwrite schema
 export interface Exercise extends AppwriteDocument {
   courseId: string;
   topicId: string;
 
-  // Question content (LaTeX supported)
+  // Question content (LaTeX supported with $ delimiters)
   question: string;
   questionHe?: string;
 
-  // Difficulty
+  // Difficulty and rewards
   difficulty: ExerciseDifficulty;
-  xpReward: number; // Base XP (modified by difficulty multiplier)
-
-  // Solution content
-  solution: string;
-  solutionHe?: string;
+  xpReward: number; // 10 for easy, 15 for medium, 20 for hard
 
   // Answer for validation
-  correctAnswer: string; // The correct answer
+  answer?: string; // The correct answer
   answerType: AnswerType;
 
-  // Tips/hints - can be an array for multiple hints
-  hints?: string[];
-  hintsHe?: string[];
+  // Tip/hint (single string, not array)
+  tip?: string;
+  tipHe?: string;
 
-  // Tags for categorization
-  tags?: string[];
-
-  // Estimated time in minutes
-  estimatedTime?: number;
+  // Estimated time in minutes (1-60, default 5)
+  estimatedMinutes: number;
 
   // Whether this exercise is active (visible to users)
   isActive: boolean;
@@ -116,13 +109,54 @@ export interface Exercise extends AppwriteDocument {
   diagramUrl?: string;
 
   // AI generation metadata
-  aiGenerated?: boolean;
-  generatedBy?: string; // Model name
+  generatedBy?: string; // Model name (e.g., "gemini-2.0-flash")
   generatedAt?: string;
 
   // Usage tracking
   timesUsed: number;
-  averageRating?: number;
+  averageRating?: number; // 0-5 scale
+}
+
+/**
+ * Extended Exercise type for Admin UI
+ * Combines Exercise with ExerciseSolution data and form-friendly field names
+ * Used in admin forms and preview components
+ */
+export interface AdminExercise extends Exercise {
+  // Form-friendly aliases for UI
+  correctAnswer?: string; // Alias for `answer`
+  estimatedTime?: number; // Alias for `estimatedMinutes`
+
+  // Solution data (from exercise_solutions table)
+  solution?: string;
+  solutionHe?: string;
+
+  // Hints as array (for form array fields, converted from tip)
+  hints?: string[];
+  hintsHe?: string[];
+
+  // Tags for categorization
+  tags?: string[];
+}
+
+// Exercise Solution Collection - separate table for solution steps
+export interface ExerciseSolution extends AppwriteDocument {
+  exerciseId: string;
+
+  // Full solution explanation
+  solution: string;
+
+  // Step-by-step solution (stored as JSON string in DB)
+  steps?: string; // JSON array of steps
+  stepsHe?: string; // JSON array of Hebrew steps
+}
+
+// Helper type for parsed solution steps
+export interface ParsedExerciseSolution {
+  exerciseId: string;
+  solution: string;
+  steps: string[];
+  stepsHe: string[];
 }
 
 // Daily Set Collection
@@ -208,7 +242,14 @@ export const XP_LEVELS = [
   { level: 10, title: "Sage", titleHe: "חכם", xpRequired: 10000 },
 ] as const;
 
-// Difficulty XP multipliers
+// XP rewards per difficulty level
+export const XP_REWARDS: Record<ExerciseDifficulty, number> = {
+  easy: 10,
+  medium: 15,
+  hard: 20,
+} as const;
+
+// Difficulty XP multipliers (for bonus calculations)
 export const DIFFICULTY_MULTIPLIERS = {
   easy: 1,
   medium: 1.5,
@@ -222,3 +263,8 @@ export const BASE_XP = {
   streakBonus: 5, // Per day in streak
   perfectDayBonus: 15, // All exercises correct
 } as const;
+
+// Helper function to get XP reward for a difficulty
+export function getXpReward(difficulty: ExerciseDifficulty): number {
+  return XP_REWARDS[difficulty];
+}

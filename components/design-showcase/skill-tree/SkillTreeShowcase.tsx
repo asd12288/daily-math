@@ -1,7 +1,7 @@
 "use client";
 
 import { SkillTreeFlow } from "./SkillTreeFlow";
-import { mockSkillBranches } from "@/lib/mock-data";
+import { mockSkillBranches } from "../mock-data";
 import { CardBox } from "@/shared/ui";
 import { Icon } from "@iconify/react";
 
@@ -9,8 +9,7 @@ function Legend() {
   const statuses = [
     { status: "mastered", label: "Mastered", color: "#22c55e", icon: "tabler:check" },
     { status: "in_progress", label: "In Progress", color: "#6366f1", icon: "tabler:loader-2" },
-    { status: "available", label: "Available", color: "#9ca3af", icon: "tabler:circle" },
-    { status: "locked", label: "Locked", color: "#d1d5db", icon: "tabler:lock" },
+    { status: "not_started", label: "Not Started", color: "#9ca3af", icon: "tabler:circle" },
   ];
 
   return (
@@ -62,8 +61,8 @@ export function SkillTreeShowcase() {
           <div>
             <h4 className="font-semibold text-lg mb-1">Interactive Skill Tree</h4>
             <p className="text-gray-500 text-sm mb-3">
-              Navigate your learning path! Topics are connected by prerequisites.
-              Complete earlier topics to unlock advanced ones.
+              Navigate your learning path! All topics are available to practice.
+              Prerequisites are shown as recommendations to help guide your progress.
             </p>
             <div className="flex flex-wrap gap-4">
               <div className="text-sm">

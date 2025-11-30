@@ -127,17 +127,9 @@ export function WorksheetQuestion({
 
         {/* Question Content */}
         <div className="mb-4">
-          <p className="text-gray-900 dark:text-white font-medium mb-2">
-            {questionText}
-          </p>
-          {problem.questionLatex && (
-            <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl text-center">
-              <MathDisplay
-                content={problem.questionLatex}
-                className="text-xl text-gray-900 dark:text-white"
-              />
-            </div>
-          )}
+          <div className="text-gray-900 dark:text-white font-medium text-lg">
+            <MathDisplay content={questionText} />
+          </div>
         </div>
 
         {/* Answer Input */}
@@ -185,9 +177,9 @@ export function WorksheetQuestion({
                   height={16}
                   className="text-warning-600 dark:text-warning-400 mt-0.5 shrink-0"
                 />
-                <p className="text-sm text-warning-800 dark:text-warning-200">
-                  {hint}
-                </p>
+                <span className="text-sm text-warning-800 dark:text-warning-200">
+                  <MathDisplay content={hint} />
+                </span>
               </div>
             )}
           </div>
@@ -201,7 +193,7 @@ export function WorksheetQuestion({
                 DEV
               </span>
               <span className="text-sm text-purple-700 dark:text-purple-300">
-                Answer: <code className="font-mono font-bold">{problem.correctAnswer}</code>
+                Answer: <code className="font-mono font-bold"><MathDisplay content={problem.correctAnswer} /></code>
               </span>
             </div>
           </div>

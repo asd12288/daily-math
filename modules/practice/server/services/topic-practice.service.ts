@@ -5,9 +5,14 @@ import { createAdminClient } from "@/lib/appwrite/server";
 import { ID, Query } from "node-appwrite";
 import { APPWRITE_CONFIG } from "@/lib/appwrite/config";
 import { SkillTreeService } from "@/modules/skill-tree/server/services/skill-tree.service";
-import { UserProfileService } from "@/modules/gamification/server/services/user-profile.service";
+import {
+  UserProfileService,
+  calculateStreakBonus,
+  XP_BASE,
+} from "@/modules/gamification/server/services/user-profile.service";
 import { getTopicById, TOPICS } from "@/modules/skill-tree/config/topics";
-import type { Problem } from "../../types";
+import type { Problem, StuckInfo } from "../../types";
+import { STUCK_THRESHOLD } from "../../types";
 import type { Difficulty } from "@/modules/skill-tree/types";
 import type { Exercise } from "@/modules/courses/types";
 import type { Models } from "node-appwrite";
@@ -91,6 +96,12 @@ export class TopicPracticeService {
 
     // Shuffle the problems
     const shuffledProblems = this.shuffleArray(problems);
+
+    // Check if we have any problems - return null if empty
+    if (shuffledProblems.length === 0) {
+      console.warn(`No exercises available for topic: ${topicId}`);
+      return null;
+    }
 
     // Mark exercises as used
     if (usedExerciseIds.length > 0) {
@@ -206,6 +217,114 @@ export class TopicPracticeService {
   }
 
   /**
+   * Complete a session with all results at once
+   * Called after worksheet submission - syncs XP, updates streak, checks level up
+   */
+  static async completeSession(
+    userId: string,
+    sessionId: string,
+    results: {
+      totalXp: number;
+      correctCount: number;
+      incorrectCount: number;
+      skippedCount: number;
+      results: Array<{
+        problemId: string;
+        isCorrect: boolean;
+        isSkipped: boolean;
+        xpEarned: number;
+      }>;
+    }
+  ): Promise<{
+    success: boolean;
+    totalXp: number;
+    baseXp: number;
+    streakBonus: number;
+    perfectBonus: number;
+    newStreak: number;
+    leveledUp: boolean;
+    newLevel: number;
+    newLevelTitle: string;
+  }> {
+    const { databases } = await createAdminClient();
+
+    // Get the session
+    const session = await this.getSession(sessionId);
+    if (!session || session.userId !== userId) {
+      return {
+        success: false,
+        totalXp: 0,
+        baseXp: 0,
+        streakBonus: 0,
+        perfectBonus: 0,
+        newStreak: 0,
+        leveledUp: false,
+        newLevel: 1,
+        newLevelTitle: "Beginner",
+      };
+    }
+
+    // Calculate bonuses
+    const baseXp = results.totalXp;
+
+    // Update streak first to get current streak for bonus calculation
+    const streakResult = await UserProfileService.updateStreak(userId);
+    const currentStreak = streakResult.currentStreak;
+
+    // Calculate streak bonus (5 XP per day, max 50)
+    const streakBonus = calculateStreakBonus(currentStreak);
+
+    // Perfect bonus if all answers correct
+    const totalQuestions = results.correctCount + results.incorrectCount + results.skippedCount;
+    const perfectBonus = results.correctCount === totalQuestions ? XP_BASE.perfectDayBonus : 0;
+
+    // Total XP including bonuses
+    const totalXpWithBonuses = baseXp + streakBonus + perfectBonus;
+
+    // Sync XP to user profile and check for level up
+    const xpResult = await UserProfileService.syncUserXp(userId, totalXpWithBonuses);
+
+    // Update session as completed
+    await databases.updateDocument(
+      APPWRITE_CONFIG.databaseId,
+      APPWRITE_CONFIG.collections.practiceSessions,
+      sessionId,
+      {
+        isCompleted: true,
+        completedAt: new Date().toISOString(),
+        xpEarned: totalXpWithBonuses,
+        completedCount: totalQuestions,
+      }
+    );
+
+    // Update skill tree progress for each problem
+    for (const result of results.results) {
+      if (!result.isSkipped) {
+        const problem = session.problems.find((p) => p.id === result.problemId);
+        if (problem) {
+          await SkillTreeService.updateProgress(userId, problem.topicId, result.isCorrect);
+        }
+      }
+    }
+
+    // Get level title
+    const { XP_LEVELS } = await import("@/modules/gamification/server/services/user-profile.service");
+    const levelInfo = XP_LEVELS.find((l) => l.level === xpResult.newLevel) || XP_LEVELS[0];
+
+    return {
+      success: true,
+      totalXp: totalXpWithBonuses,
+      baseXp,
+      streakBonus,
+      perfectBonus,
+      newStreak: currentStreak,
+      leveledUp: xpResult.leveledUp,
+      newLevel: xpResult.newLevel,
+      newLevelTitle: levelInfo.title,
+    };
+  }
+
+  /**
    * Validate that a string is a valid Appwrite document ID
    * (max 36 chars, alphanumeric + period, hyphen, underscore, can't start with special char)
    */
@@ -217,6 +336,7 @@ export class TopicPracticeService {
 
   /**
    * Submit an answer for a practice session problem
+   * Now includes stuck detection after consecutive wrong answers
    */
   static async submitAnswer(
     userId: string,
@@ -224,7 +344,7 @@ export class TopicPracticeService {
     problemId: string,
     answerText: string | null,
     isSkipped: boolean
-  ): Promise<{ success: boolean; isCorrect: boolean | null; xpEarned: number }> {
+  ): Promise<{ success: boolean; isCorrect: boolean | null; xpEarned: number; stuckInfo?: StuckInfo }> {
     // Validate IDs before using them
     if (!this.isValidDocumentId(sessionId)) {
       console.error(`Invalid sessionId format: ${sessionId} (length: ${sessionId?.length})`);
@@ -309,7 +429,118 @@ export class TopicPracticeService {
       await UserProfileService.updateStreak(userId);
     }
 
-    return { success: true, isCorrect, xpEarned };
+    // Check for stuck detection if answer was wrong
+    let stuckInfo: StuckInfo | undefined;
+    if (isCorrect === false) {
+      stuckInfo = await this.checkIfStuck(userId, problem.topicId);
+    }
+
+    return { success: true, isCorrect, xpEarned, stuckInfo };
+  }
+
+  /**
+   * Check if user is stuck on a topic (5+ consecutive wrong answers)
+   */
+  static async checkIfStuck(userId: string, topicId: string): Promise<StuckInfo> {
+    const { databases } = await createAdminClient();
+
+    try {
+      // Get recent attempts for this topic
+      const response = await databases.listDocuments(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.problemAttempts,
+        [
+          Query.equal("userId", userId),
+          Query.orderDesc("submittedAt"),
+          Query.limit(20), // Look at recent attempts
+        ]
+      );
+
+      // Count consecutive wrong answers on this topic
+      let consecutiveWrong = 0;
+      for (const doc of response.documents) {
+        // We need to check if this attempt is for the same topic
+        // Get the problem's topicId from the session or problem
+        const session = await this.getSession(doc.sessionId);
+        if (!session) continue;
+
+        const problem = session.problems.find(p => p.id === doc.problemId);
+        if (!problem || problem.topicId !== topicId) continue;
+
+        if (doc.isCorrect === false) {
+          consecutiveWrong++;
+        } else if (doc.isCorrect === true) {
+          break; // Stop at first correct answer
+        }
+        // Skip skipped answers for consecutive count
+      }
+
+      const isStuck = consecutiveWrong >= STUCK_THRESHOLD;
+      const topic = getTopicById(topicId);
+
+      // Generate suggestions based on how stuck they are
+      let suggestions: string[] = [];
+      let suggestionsHe: string[] = [];
+      let recommendedAction: StuckInfo["recommendedAction"] = "continue";
+
+      if (consecutiveWrong >= STUCK_THRESHOLD + 3) {
+        // Very stuck (8+ wrong)
+        suggestions = [
+          "Take a short break and come back with fresh eyes",
+          `Consider reviewing the prerequisites for "${topic?.name || "this topic"}"`,
+          "Try watching a tutorial video on this concept",
+        ];
+        suggestionsHe = [
+          "קח הפסקה קצרה וחזור עם מבט רענן",
+          `שקול לחזור על הדרישות המקדימות של "${topic?.nameHe || "נושא זה"}"`,
+          "נסה לצפות בסרטון הסבר על הנושא",
+        ];
+        recommendedAction = "take_break";
+      } else if (consecutiveWrong >= STUCK_THRESHOLD + 1) {
+        // Moderately stuck (6-7 wrong)
+        suggestions = [
+          "Try an easier problem first to build confidence",
+          "Read the hints carefully before attempting",
+          "Review the solution steps from previous problems",
+        ];
+        suggestionsHe = [
+          "נסה שאלה קלה יותר קודם כדי לבנות ביטחון",
+          "קרא את הרמזים בעיון לפני שתנסה",
+          "עבור על שלבי הפתרון משאלות קודמות",
+        ];
+        recommendedAction = "try_easier";
+      } else if (isStuck) {
+        // Just stuck (5 wrong)
+        suggestions = [
+          "Don't give up! This is a challenging topic",
+          "Use the hint button for guidance",
+          "Focus on understanding, not just the answer",
+        ];
+        suggestionsHe = [
+          "אל תוותר! זה נושא מאתגר",
+          "השתמש בכפתור הרמז לעזרה",
+          "התמקד בהבנה, לא רק בתשובה",
+        ];
+        recommendedAction = "review_hint";
+      }
+
+      return {
+        isStuck,
+        consecutiveWrong,
+        suggestions,
+        suggestionsHe,
+        recommendedAction,
+      };
+    } catch (error) {
+      console.error("Failed to check stuck status:", error);
+      return {
+        isStuck: false,
+        consecutiveWrong: 0,
+        suggestions: [],
+        suggestionsHe: [],
+        recommendedAction: "continue",
+      };
+    }
   }
 
   // === Private helper methods ===
@@ -350,7 +581,8 @@ export class TopicPracticeService {
   private static exerciseToProblem(
     exercise: Exercise,
     slot: "core" | "challenge",
-    _index: number
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    index: number
   ): Problem {
     const topic = getTopicById(exercise.topicId) || TOPICS[0];
 
@@ -366,6 +598,7 @@ export class TopicPracticeService {
       questionTextHe: exercise.questionHe || exercise.question,
       questionLatex: "",
       correctAnswer: exercise.answer || "",
+      answerType: exercise.answerType,
       solutionSteps: [], // Will be fetched from exercise_solutions if needed
       solutionStepsHe: [],
       hint: exercise.tip || "",

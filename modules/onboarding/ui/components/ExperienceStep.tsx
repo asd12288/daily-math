@@ -83,7 +83,8 @@ export function ExperienceStep({ onNext, onBack }: ExperienceStepProps) {
 }
 
 function ExperienceCard({
-  level: _level,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  level,
   icon,
   color,
   title,

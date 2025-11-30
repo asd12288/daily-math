@@ -2,7 +2,7 @@
 
 import { CardBox } from "@/shared/ui";
 import { Icon } from "@iconify/react";
-import { mockUser, mockStats } from "@/lib/mock-data";
+import { mockUser, mockStats } from "../mock-data";
 
 interface StatCardProps {
   title: string;
@@ -16,16 +16,16 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon, bgColor, iconColor, subtitle, trend }: StatCardProps) {
   return (
-    <CardBox className={`${bgColor}`}>
-      <div className="flex items-center gap-4">
+    <CardBox className={`${bgColor} !p-4`}>
+      <div className="flex items-center gap-3">
         <div
-          className={`h-12 w-12 rounded-lg flex items-center justify-center ${iconColor} bg-white/80 dark:bg-gray-800/80`}
+          className={`h-10 w-10 rounded-lg flex items-center justify-center ${iconColor} bg-white/80 dark:bg-gray-800/80`}
         >
-          <Icon icon={icon} className="text-2xl" />
+          <Icon icon={icon} className="text-xl" />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="text-2xl font-bold">{value}</h3>
+            <h3 className="text-lg font-bold">{value}</h3>
             {trend && (
               <span
                 className={`text-xs font-medium flex items-center ${
@@ -40,8 +40,8 @@ function StatCard({ title, value, icon, bgColor, iconColor, subtitle, trend }: S
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{title}</p>
-          {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+          <p className="text-xs text-gray-600 dark:text-gray-400">{title}</p>
+          {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
         </div>
       </div>
     </CardBox>

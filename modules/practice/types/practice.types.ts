@@ -1,7 +1,12 @@
 // modules/practice/types/practice.types.ts
 // Type definitions for the Practice module
+//
+// NOTE: These types are for UI display, not direct DB storage.
+// The Problem interface combines data from both `exercises` and `exercise_solutions` tables.
+// Field names here may differ from DB field names for UI clarity.
 
 import type { Difficulty } from "@/modules/skill-tree/types";
+import type { AnswerType as ExerciseAnswerType } from "@/lib/appwrite/types";
 
 /**
  * Problem slot types in a daily set
@@ -9,9 +14,10 @@ import type { Difficulty } from "@/modules/skill-tree/types";
 export type ProblemSlot = "review" | "core" | "foundation" | "challenge";
 
 /**
- * Answer submission type
+ * How the user submitted their answer
+ * Note: Different from ExerciseAnswerType which is what TYPE of answer is expected
  */
-export type AnswerType = "text" | "image" | "skipped";
+export type UserAnswerMethod = "text" | "image" | "skipped";
 
 /**
  * Problem status
@@ -19,7 +25,18 @@ export type AnswerType = "text" | "image" | "skipped";
 export type ProblemStatus = "pending" | "answered" | "skipped";
 
 /**
- * AI-generated problem structure
+ * Problem structure for UI display
+ * Combines data from `exercises` and `exercise_solutions` tables
+ *
+ * Field mapping from DB:
+ * - questionText ← exercises.question
+ * - questionTextHe ← exercises.questionHe
+ * - correctAnswer ← exercises.answer
+ * - answerType ← exercises.answerType
+ * - hint ← exercises.tip
+ * - hintHe ← exercises.tipHe
+ * - solutionSteps ← exercise_solutions.steps (parsed from JSON)
+ * - solutionStepsHe ← exercise_solutions.stepsHe (parsed from JSON)
  */
 export interface Problem {
   id: string;
@@ -29,17 +46,22 @@ export interface Problem {
   slot: ProblemSlot;
   difficulty: Difficulty;
 
-  // Question content
-  questionText: string;
-  questionTextHe: string;
-  questionLatex?: string; // Optional LaTeX for math expressions
+  // Question content (from exercises table)
+  questionText: string; // DB: question
+  questionTextHe: string; // DB: questionHe
+  questionLatex?: string; // Optional extracted LaTeX for display
 
-  // Solution (revealed after answering)
-  correctAnswer: string;
-  solutionSteps: string[];
-  solutionStepsHe: string[];
-  hint?: string;
-  hintHe?: string;
+  // Answer info (from exercises table)
+  correctAnswer: string; // DB: answer
+  answerType: ExerciseAnswerType; // DB: answerType - numeric, expression, proof, open
+
+  // Solution (from exercise_solutions table, revealed after answering)
+  solutionSteps: string[]; // DB: steps (parsed from JSON)
+  solutionStepsHe: string[]; // DB: stepsHe (parsed from JSON)
+
+  // Hint (from exercises table)
+  hint?: string; // DB: tip
+  hintHe?: string; // DB: tipHe
 
   // Metadata
   estimatedMinutes: number;
@@ -56,7 +78,7 @@ export interface ProblemAttempt {
   userId: string;
 
   // Answer
-  answerType: AnswerType;
+  answerMethod: UserAnswerMethod; // How user submitted: text, image, or skipped
   answerText?: string;
   answerImageUrl?: string;
 
@@ -158,3 +180,77 @@ export const SLOT_INFO: Record<ProblemSlot, { icon: string; color: string }> = {
   foundation: { icon: "tabler:building-foundation", color: "success" },
   challenge: { icon: "tabler:flame", color: "warning" },
 };
+
+/**
+ * Stuck detection info
+ * Returned when user gets 5+ consecutive wrong answers on a topic
+ */
+export interface StuckInfo {
+  isStuck: boolean;
+  consecutiveWrong: number;
+  suggestions: string[];
+  suggestionsHe: string[];
+  recommendedAction: "continue" | "review_hint" | "try_easier" | "take_break";
+}
+
+/**
+ * Threshold for stuck detection
+ */
+export const STUCK_THRESHOLD = 5;
+
+/**
+ * @deprecated Use UserAnswerMethod instead
+ * Kept for backward compatibility
+ */
+export type AnswerType = UserAnswerMethod;
+
+/**
+ * Helper to convert DB Exercise + ExerciseSolution to Problem for UI
+ */
+export interface ExerciseWithSolution {
+  // From exercises table
+  $id: string;
+  topicId: string;
+  question: string;
+  questionHe?: string;
+  difficulty: "easy" | "medium" | "hard";
+  answer?: string;
+  answerType: "numeric" | "expression" | "proof" | "open";
+  tip?: string;
+  tipHe?: string;
+  estimatedMinutes: number;
+  xpReward: number;
+  // From exercise_solutions table (already parsed)
+  solutionSteps?: string[];
+  solutionStepsHe?: string[];
+  // Topic info (joined from topics)
+  topicName?: string;
+  topicNameHe?: string;
+}
+
+/**
+ * Convert DB exercise data to Problem for UI display
+ */
+export function toProblem(
+  exercise: ExerciseWithSolution,
+  slot: ProblemSlot = "core"
+): Problem {
+  return {
+    id: exercise.$id,
+    topicId: exercise.topicId,
+    topicName: exercise.topicName || "",
+    topicNameHe: exercise.topicNameHe || "",
+    slot,
+    difficulty: exercise.difficulty,
+    questionText: exercise.question,
+    questionTextHe: exercise.questionHe || exercise.question,
+    correctAnswer: exercise.answer || "",
+    answerType: exercise.answerType,
+    solutionSteps: exercise.solutionSteps || [],
+    solutionStepsHe: exercise.solutionStepsHe || [],
+    hint: exercise.tip,
+    hintHe: exercise.tipHe,
+    estimatedMinutes: exercise.estimatedMinutes,
+    xpReward: exercise.xpReward,
+  };
+}

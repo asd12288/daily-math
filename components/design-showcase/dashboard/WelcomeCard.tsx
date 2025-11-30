@@ -2,7 +2,7 @@
 
 import { CardBox } from "@/shared/ui";
 import { Icon } from "@iconify/react";
-import { mockUser, mockDailySet } from "@/lib/mock-data";
+import { mockUser, mockDailySet } from "../mock-data";
 
 export function WelcomeCard() {
   const currentHour = new Date().getHours();

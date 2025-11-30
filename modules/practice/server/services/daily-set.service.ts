@@ -99,7 +99,7 @@ export class DailySetService {
     // Get user's skill tree state
     const skillTree = await SkillTreeService.getSkillTreeState(userId);
 
-    // Determine focus topic (first in_progress or first available)
+    // Determine focus topic (first in_progress or first not_started)
     let focusTopic = skillTree.branches
       .flatMap((b) => b.topics)
       .find((t) => t.status === "in_progress");
@@ -107,18 +107,20 @@ export class DailySetService {
     if (!focusTopic) {
       focusTopic = skillTree.branches
         .flatMap((b) => b.topics)
-        .find((t) => t.status === "available");
+        .find((t) => t.status === "not_started");
     }
 
-    // Fallback to first topic if nothing found
+    // Fallback to first topic if nothing found (all mastered = maintenance mode)
     if (!focusTopic) {
       const firstTopic = TOPICS[0];
       focusTopic = {
         ...firstTopic,
         progress: null,
-        status: "available" as const,
+        status: "not_started" as const,
         mastery: 0,
-        isUnlocked: true,
+        canPractice: true as const,
+        hasUnmetPrerequisites: false,
+        recommendedFirst: [],
       };
     }
 
@@ -190,8 +192,7 @@ export class DailySetService {
     config: DailySetConfig
   ): Promise<Problem[]> {
     const skillTree = await SkillTreeService.getSkillTreeState(userId);
-    // focusTopic resolved for potential future debugging
-    const _focusTopic = getTopicById(focusTopicId) || TOPICS[0];
+    // focusTopic is derived from focusTopicId for slot selection
 
     const usedExerciseIds: string[] = [];
     const problems: Problem[] = [];
@@ -301,7 +302,7 @@ export class DailySetService {
       dailySetId: dailySetId,
       problemId,
       userId,
-      answerType: isSkipped ? "skipped" : answerImageUrl ? "image" : "text",
+      answerMethod: isSkipped ? "skipped" : answerImageUrl ? "image" : "text",
       answerText: answerText || undefined,
       answerImageUrl: answerImageUrl || undefined,
       isCorrect,
@@ -376,7 +377,7 @@ export class DailySetService {
           dailySetId: d.dailySetId,
           problemId: d.problemId,
           userId: d.userId,
-          answerType: d.answerType,
+          answerMethod: d.answerMethod,
           answerText: d.answerText,
           answerImageUrl: d.answerImageUrl,
           isCorrect: d.isCorrect,
@@ -426,7 +427,8 @@ export class DailySetService {
 
   private static selectReviewTopic(
     skillTree: SkillTreeState,
-    _config: DailySetConfig
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    config: DailySetConfig
   ): TopicWithProgress | null {
     // Find a mastered topic that hasn't been practiced recently
     const masteredTopics = skillTree.branches
@@ -488,6 +490,7 @@ export class DailySetService {
           questionTextHe: aiQuestion.questionTextHe,
           questionLatex: "", // AI doesn't generate LaTeX separately
           correctAnswer: aiQuestion.correctAnswer,
+          answerType: aiQuestion.answerType,
           solutionSteps: aiQuestion.solutionSteps,
           solutionStepsHe: aiQuestion.solutionStepsHe,
           hint: aiQuestion.hint,
@@ -527,6 +530,7 @@ export class DailySetService {
       questionTextHe: this.generatePlaceholderQuestionHe(topic, difficulty),
       questionLatex: this.generatePlaceholderLatex(topic, difficulty),
       correctAnswer: this.generatePlaceholderAnswer(topic, difficulty),
+      answerType: "expression" as const,
       solutionSteps: [
         "Step 1: Identify the problem type",
         "Step 2: Apply the appropriate method",
@@ -617,7 +621,8 @@ export class DailySetService {
 
   private static generatePlaceholderLatex(
     topic: Topic,
-    _difficulty: Difficulty
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    difficulty: Difficulty
   ): string {
     const templates: Record<string, string> = {
       "factoring-trinomials": "x^2 + 7x + 12",
@@ -695,7 +700,8 @@ export class DailySetService {
   private static exerciseToProblem(
     exercise: Exercise,
     slot: ProblemSlot,
-    _index: number
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    index: number
   ): Problem {
     const topic = getTopicById(exercise.topicId) || TOPICS[0];
 
@@ -711,6 +717,7 @@ export class DailySetService {
       questionTextHe: exercise.questionHe || exercise.question,
       questionLatex: "", // Can be extracted from questionText if needed
       correctAnswer: exercise.answer || "",
+      answerType: exercise.answerType,
       solutionSteps: [], // Fetched from exercise_solutions if needed
       solutionStepsHe: [],
       hint: exercise.tip || "",

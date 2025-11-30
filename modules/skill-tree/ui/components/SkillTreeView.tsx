@@ -17,8 +17,7 @@ interface SkillTreeViewProps {
 
 export function SkillTreeView({ onTopicClick }: SkillTreeViewProps) {
   const t = useTranslations();
-  // Locale available for future localized skill tree content
-  const _locale = useLocale();
+  useLocale(); // For future localized skill tree content
   const { skillTree, isLoading, error } = useSkillTree();
 
   if (isLoading) {
