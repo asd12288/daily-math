@@ -1,0 +1,575 @@
+{
+  "app": {
+    "name": "DailyMath",
+    "tagline": "Master math, one day at a time"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "close": "Close",
+    "start": "Start",
+    "continue": "Continue",
+    "tryAgain": "Try Again",
+    "minutes": "min",
+    "refresh": "Refresh"
+  },
+  "nav": {
+    "home": "Home",
+    "courses": "Courses",
+    "history": "History",
+    "settings": "Settings",
+    "profile": "Profile",
+    "devDesign": "Design System",
+    "devAI": "AI Testing",
+    "adminQuestions": "Question Bank"
+  },
+  "auth": {
+    "back": "Back",
+    "login": "Log In",
+    "register": "Sign Up",
+    "logout": "Log Out",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "displayName": "Display Name",
+    "name": "Full Name",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "loginSuccess": "Welcome back!",
+    "registerSuccess": "Account created successfully!",
+    "welcomeBack": "Welcome Back",
+    "loginSubtitle": "Sign in to continue your learning journey",
+    "createAccount": "Create Account",
+    "registerSubtitle": "Start your math mastery journey today",
+    "signIn": "Sign In",
+    "orSignInWith": "or sign in with",
+    "orSignUpWith": "or sign up with",
+    "forgotPasswordSubtitle": "Enter your email and we'll send you a reset link",
+    "backToLogin": "Back to Login",
+    "checkEmail": "Check Your Email",
+    "resetEmailSent": "We've sent you a password reset link. Please check your inbox.",
+    "sendResetLink": "Send Reset Link",
+    "errors": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email",
+      "passwordRequired": "Password is required",
+      "passwordMin": "Password must be at least 8 characters",
+      "passwordMismatch": "Passwords do not match",
+      "displayNameRequired": "Display name is required",
+      "nameRequired": "Name is required",
+      "invalidCredentials": "Invalid email or password",
+      "emailExists": "An account with this email already exists"
+    }
+  },
+  "dashboard": {
+    "welcome": "Good morning",
+    "todaysSet": "Today's Set",
+    "exercises": "exercises",
+    "minutes": "min",
+    "startPractice": "Start Practice",
+    "yourProgress": "Your Progress",
+    "level": "Level",
+    "totalXP": "Total XP",
+    "nextLevel": "Next level",
+    "toNextLevel": "to next level",
+    "streakCalendar": "Streak Calendar",
+    "currentStreak": "Current Streak",
+    "days": "days"
+  },
+  "practice": {
+    "exerciseOf": "Exercise {current} of {total}",
+    "question": "Question",
+    "solution": "Solution",
+    "answer": "Answer",
+    "tip": "Tip",
+    "markDone": "Mark as Done",
+    "uploadHandwork": "Upload your handwritten work",
+    "uploadHandworkDesc": "Take a photo of your work for all questions (optional)",
+    "completed": "Completed!",
+    "xpEarned": "+{xp} XP",
+    "showSolution": "Show Solution",
+    "hideSolution": "Hide Solution",
+    "solutionSteps": "Solution Steps",
+    "enterAnswer": "Enter your answer...",
+    "skip": "Skip",
+    "needHelp": "Need Help?",
+    "finish": "Finish",
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "skipped": "Skipped",
+    "xpEarnedMessage": "+{xp} XP earned!",
+    "startPractice": "Start Practice",
+    "resumePractice": "Resume Practice",
+    "allCompleted": "All Completed!",
+    "problemsCompleted": "{completed} of {total} problems completed",
+    "slots": {
+      "review": "Review",
+      "core": "Core",
+      "foundation": "Foundation",
+      "challenge": "Challenge"
+    },
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "topicPractice": "Topic Practice",
+    "preparingSession": "Preparing your practice session...",
+    "sessionError": "Session Error",
+    "couldNotLoadSession": "We couldn't load your practice session. Please try again.",
+    "nextProblem": "Next Problem",
+    "finishSession": "Finish Session",
+    "sessionComplete": "Session Complete!",
+    "completedTopic": "You completed a practice session for {topic}",
+    "problemsSolved": "Problems Solved",
+    "earned": "Earned",
+    "practiceAgain": "Practice Again",
+    "backToCourse": "Back to Course",
+    "backToDashboard": "Back to Dashboard",
+    "greatJob": "Great job! Keep it up!",
+    "reviewSolution": "Review the solution below",
+    "helpComingSoon": "AI tutor coming soon! For now, check the hint.",
+    "yourAnswer": "Your answer",
+    "correctAnswer": "Correct answer",
+    "notSure": "I'm not sure (skip this one)",
+    "showHint": "Show Hint",
+    "optional": "Optional",
+    "chooseFile": "Choose File",
+    "progress": "Progress",
+    "answered": "answered",
+    "submitAll": "Submit All Answers",
+    "worksheetInstructions": "Answer all questions, then click Submit. You can skip questions you're unsure about.",
+    "days": "days",
+    "reviewAnswers": "Review Your Answers",
+    "loadingExercises": "Loading Your Exercises",
+    "preparingYourSet": "Preparing your daily practice set...",
+    "errorLoadingSet": "Could Not Load Exercises",
+    "noSetAvailable": "No Practice Set Available",
+    "setGenerating": "Your practice set is being prepared. Please try again in a moment.",
+    "savingAnswers": "Saving Your Answers",
+    "savingProgress": "Saving {current} of {total}...",
+    "todaysPractice": "Today's Practice",
+    "questions": "questions"
+  },
+  "courses": {
+    "title": "Select Your Courses",
+    "subtitle": "Choose the subjects you want to practice daily",
+    "topics": "topics",
+    "comingSoon": "Coming Soon",
+    "savePreferences": "Save Preferences"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your preferences and account",
+    "loading": "Loading settings...",
+    "error": "Unable to load settings",
+    "errorDesc": "Please try refreshing the page",
+    "comingSoon": "Coming Soon",
+    "profile": {
+      "title": "Profile",
+      "description": "Your personal information",
+      "displayName": "Display Name",
+      "email": "Email",
+      "avatar": "Profile Picture",
+      "emailLocked": "Email is linked to your account"
+    },
+    "practice": {
+      "title": "Practice Preferences",
+      "description": "Customize your daily practice",
+      "exerciseCount": "Daily Exercise Count",
+      "exerciseCountDesc": "How many exercises per day?",
+      "perDay": "exercises/day",
+      "preferredTime": "Preferred Practice Time",
+      "preferredTimeDesc": "When should we remind you?",
+      "estimatedTime": "Estimated time",
+      "potentialXp": "Potential XP",
+      "minutes": "min",
+      "highCountWarning": "That's ambitious! Make sure you have enough time to complete all exercises."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Control how we contact you",
+      "dailyReminder": "Daily Reminder",
+      "dailyReminderDesc": "Get reminded to complete your daily exercises",
+      "streakWarning": "Streak Warning",
+      "streakWarningDesc": "Get notified before your streak is about to break",
+      "weeklyReport": "Weekly Report",
+      "weeklyReportDesc": "Receive a weekly summary of your progress"
+    },
+    "language": {
+      "title": "Language & Display",
+      "description": "Choose your language and appearance",
+      "theme": "Theme",
+      "themeDesc": "Light, Dark, or System"
+    },
+    "integrations": {
+      "title": "Integrations",
+      "description": "Connect external services",
+      "notion": "Notion",
+      "notConnected": "Not connected",
+      "connect": "Connect"
+    }
+  },
+  "skillTree": {
+    "title": "Skill Tree",
+    "subtitle": "Your learning path through Pre-Calculus Algebra",
+    "yourProgress": "Your Progress",
+    "topicsMastered": "topics mastered",
+    "complete": "Complete",
+    "currentFocus": "Current Focus",
+    "locked": "Locked",
+    "available": "Available",
+    "inProgress": "In Progress",
+    "mastered": "Mastered",
+    "branches": {
+      "foundations": "Foundations",
+      "linear": "Linear Algebra",
+      "polynomials": "Polynomials",
+      "quadratics": "Quadratics",
+      "functions": "Functions"
+    }
+  },
+  "gamification": {
+    "streak": "Streak",
+    "xp": "XP",
+    "level": "Level",
+    "titles": {
+      "1": "Beginner",
+      "2": "Student",
+      "3": "Learner",
+      "4": "Practitioner",
+      "5": "Scholar",
+      "6": "Expert",
+      "7": "Master",
+      "8": "Grandmaster",
+      "9": "Legend",
+      "10": "Sage"
+    }
+  },
+  "sidebar": {
+    "main": "Main",
+    "account": "Account",
+    "learning": "Learning",
+    "developer": "Developer",
+    "admin": "Administration"
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "answerType": {
+    "numeric": "Numeric",
+    "expression": "Expression",
+    "proof": "Proof",
+    "open": "Open-ended"
+  },
+  "admin": {
+    "title": "Administration",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "confirmDelete": "Are you sure you want to delete this question?",
+    "confirmBulkDelete": "Are you sure you want to delete the selected questions?",
+    "questions": {
+      "title": "Question Bank",
+      "subtitle": "Manage all questions in the system",
+      "add": "Add Question",
+      "addTitle": "Add New Question",
+      "edit": "Edit",
+      "editTitle": "Edit Question",
+      "delete": "Delete",
+      "view": "View",
+      "preview": "Question Preview"
+    },
+    "filters": {
+      "course": "Course",
+      "topic": "Topic",
+      "difficulty": "Difficulty",
+      "type": "Type",
+      "search": "Search",
+      "searchPlaceholder": "Search questions...",
+      "clear": "Clear Filters",
+      "allCourses": "All Courses",
+      "allTopics": "All Topics",
+      "allDifficulties": "All Difficulties",
+      "allTypes": "All Types"
+    },
+    "table": {
+      "question": "Question",
+      "course": "Course",
+      "topic": "Topic",
+      "difficulty": "Difficulty",
+      "type": "Type",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "form": {
+      "course": "Course",
+      "topic": "Topic",
+      "selectCourse": "Select a course",
+      "selectTopic": "Select a topic",
+      "question": "Question",
+      "questionHe": "Question (Hebrew)",
+      "questionPlaceholder": "Enter the question text (LaTeX supported with $...$)",
+      "questionHePlaceholder": "Enter Hebrew translation",
+      "solution": "Solution",
+      "solutionHe": "Solution (Hebrew)",
+      "solutionPlaceholder": "Enter the step-by-step solution",
+      "solutionHePlaceholder": "Enter Hebrew translation",
+      "answer": "Correct Answer",
+      "answerPlaceholder": "e.g., 42 or x^2 + 1",
+      "difficulty": "Difficulty",
+      "answerType": "Answer Type",
+      "estimatedTime": "Estimated Time",
+      "hints": "Hints",
+      "tags": "Tags",
+      "tagPlaceholder": "Add a tag and press Enter",
+      "active": "Active (visible to users)",
+      "latexHint": "Tip: Use $...$ for inline math and $$...$$ for display math"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "stats": {
+      "total": "Total Questions",
+      "active": "Active",
+      "medium": "Medium",
+      "hard": "Hard"
+    },
+    "bulk": {
+      "selected": "{count} selected",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "delete": "Delete"
+    },
+    "pagination": {
+      "showing": "Showing {start}-{end} of {total}",
+      "perPage": "Per page:"
+    },
+    "preview": {
+      "question": "Question",
+      "answer": "Correct Answer",
+      "solution": "Solution",
+      "hints": "Hints",
+      "tags": "Tags"
+    },
+    "messages": {
+      "loading": "Loading questions...",
+      "noQuestions": "No Questions Found",
+      "noQuestionsDesc": "No questions match your current filters. Try adjusting your search or add a new question.",
+      "created": "Question created successfully",
+      "updated": "Question updated successfully",
+      "deleted": "Question deleted successfully",
+      "error": "An error occurred"
+    }
+  },
+  "landing": {
+    "header": {
+      "login": "Log In",
+      "register": "Sign Up",
+      "dashboard": "Dashboard"
+    },
+    "hero": {
+      "badge": "Kick start your math journey",
+      "title": "Master Math with",
+      "titleHighlight": "Daily Practice",
+      "subtitle": "AI-powered exercises, handwork verification, and gamification to help you ace your math and physics courses.",
+      "getStarted": "Start Free",
+      "learnMore": "See How It Works"
+    },
+    "howItWorks": {
+      "badge": "Simple Process",
+      "title": "How DailyMath Works",
+      "step1": {
+        "title": "Choose Your Exercises",
+        "desc": "Select 1-10 exercises per day and pick your courses. Customize your daily practice routine."
+      },
+      "step2": {
+        "title": "Practice Daily",
+        "desc": "Solve problems on paper, then upload your handwork for AI verification or self-mark."
+      },
+      "step3": {
+        "title": "Track & Level Up",
+        "desc": "Earn XP, maintain streaks, and climb levels as you master new concepts."
+      }
+    },
+    "features": {
+      "badge": "Why DailyMath?",
+      "title": "Everything You Need to Succeed",
+      "items": {
+        "daily": {
+          "title": "Daily Exercises",
+          "desc": "Fresh AI-generated problems delivered every day to keep your skills sharp."
+        },
+        "ai": {
+          "title": "AI-Generated Content",
+          "desc": "Questions, solutions, and tips powered by advanced AI for quality content."
+        },
+        "handwork": {
+          "title": "Handwork Verification",
+          "desc": "Upload photos of your handwritten solutions for instant AI analysis."
+        },
+        "xp": {
+          "title": "XP & Levels",
+          "desc": "Earn experience points and progress through 10 levels as you learn."
+        },
+        "streak": {
+          "title": "Streak System",
+          "desc": "Build daily habits with streaks and bonus XP for consistency."
+        },
+        "bilingual": {
+          "title": "Bilingual Support",
+          "desc": "Full Hebrew and English support with RTL interface."
+        }
+      }
+    },
+    "showcase": {
+      "badge": "See It In Action",
+      "title": "Beautiful Dashboard & Practice Experience"
+    },
+    "testimonials": {
+      "badge": "Student Reviews",
+      "title": "Don't Just Take Our Word For It",
+      "reviews": {
+        "0": {
+          "text": "DailyMath helped me ace my Calculus exam! The daily practice routine made all the difference."
+        },
+        "1": {
+          "text": "The streak system keeps me motivated every day. I haven't missed a practice session in 30 days!"
+        },
+        "2": {
+          "text": "Finally understand derivatives thanks to the AI feedback on my handwritten solutions."
+        },
+        "3": {
+          "text": "The XP and leveling system makes practicing feel like a game. Highly recommended!"
+        },
+        "4": {
+          "text": "Love the Hebrew support. It's perfect for Israeli students like me."
+        },
+        "5": {
+          "text": "The AI-generated questions are challenging but fair. Great for exam prep!"
+        }
+      }
+    },
+    "pricing": {
+      "badge": "Pricing Plans",
+      "title": "Simple, Transparent Pricing",
+      "subtitle": "Start free, upgrade when you're ready for more features.",
+      "popular": "Popular",
+      "free": {
+        "name": "Free",
+        "price": "$0",
+        "period": "/forever",
+        "desc": "Perfect for getting started",
+        "features": {
+          "0": "3 exercises per day",
+          "1": "Self-marking only",
+          "2": "Basic progress tracking",
+          "3": "1 course included"
+        },
+        "button": "Start Free"
+      },
+      "premium": {
+        "name": "Premium",
+        "price": "$9.99",
+        "period": "/month",
+        "desc": "For serious students",
+        "features": {
+          "0": "Up to 10 exercises per day",
+          "1": "AI handwork verification",
+          "2": "Full analytics & insights",
+          "3": "All courses included",
+          "4": "Priority support",
+          "5": "Notion integration"
+        },
+        "button": "Go Premium"
+      }
+    },
+    "cta": {
+      "title": "Ready to Master Math?",
+      "subtitle": "Join thousands of students improving their grades with daily practice.",
+      "button": "Start Your Free Journey",
+      "learnMore": "Learn More"
+    },
+    "footer": {
+      "rights": "All rights reserved by DailyMath.",
+      "madeBy": "Designed & Developed by"
+    }
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "Welcome to DailyMath!",
+      "subtitle": "Build your math skills with personalized daily practice. Let's set up your learning journey.",
+      "feature1Title": "Daily Practice",
+      "feature1Desc": "5 personalized problems every day",
+      "feature2Title": "AI Tutor",
+      "feature2Desc": "Get hints that guide you to the answer",
+      "feature3Title": "Track Progress",
+      "feature3Desc": "Watch your skills grow over time",
+      "getStarted": "Get Started"
+    },
+    "experience": {
+      "title": "What's your algebra experience?",
+      "subtitle": "This helps us personalize your starting point",
+      "beginner": {
+        "title": "Just Starting",
+        "description": "New to algebra or need to start from basics"
+      },
+      "some": {
+        "title": "Some Experience",
+        "description": "Know the basics but need more practice"
+      },
+      "comfortable": {
+        "title": "Comfortable",
+        "description": "Can solve most problems with some effort"
+      },
+      "advanced": {
+        "title": "Advanced",
+        "description": "Strong foundation, looking for challenges"
+      }
+    },
+    "diagnostic": {
+      "title": "Quick Assessment",
+      "subtitle": "Answer a few questions to find your starting level",
+      "progress": "Question {current} of {total}",
+      "noQuestions": "No questions available",
+      "correctAnswer": "Correct answer",
+      "seeResults": "See Results"
+    },
+    "results": {
+      "title": "Your Results",
+      "excellent": "Excellent! You have a strong foundation.",
+      "good": "Great work! You're on a good path.",
+      "developing": "Good start! We'll help you improve.",
+      "starting": "No worries! We'll start from the basics.",
+      "correct": "Correct",
+      "total": "Total",
+      "accuracy": "Accuracy",
+      "topicBreakdown": "Topic Breakdown",
+      "recommendation": "Your Personalized Path",
+      "recommendationText": "Based on your results, we recommend starting with {topic}.",
+      "continue": "Continue"
+    },
+    "preferences": {
+      "title": "Almost Done!",
+      "subtitle": "Set your daily practice preferences",
+      "dailyGoal": "Daily Practice Goal",
+      "problemsPerDay": "Problems per day",
+      "estimatedTime": "~{minutes} minutes per day",
+      "reminder": "Daily Reminder",
+      "reminderNote": "We'll remind you to practice",
+      "startLearning": "Start Learning"
+    }
+  }
+}

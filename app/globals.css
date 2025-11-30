@@ -1,26 +1,442 @@
 @import "tailwindcss";
+@source "../node_modules/flowbite-react";
 
+/* Enable class-based dark mode */
+@variant dark (&:where(.dark, .dark *));
+
+
+/* DailyMath Design System */
 :root {
+  /* Base colors */
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Primary - Blue (main brand color) */
+  --primary-50: #eff6ff;
+  --primary-100: #dbeafe;
+  --primary-200: #bfdbfe;
+  --primary-300: #93c5fd;
+  --primary-400: #60a5fa;
+  --primary-500: #3b82f6;
+  --primary-600: #2563eb;
+  --primary-700: #1d4ed8;
+  --primary-800: #1e40af;
+  --primary-900: #1e3a8a;
+
+  /* Secondary - Purple (for accents) */
+  --secondary-50: #faf5ff;
+  --secondary-100: #f3e8ff;
+  --secondary-200: #e9d5ff;
+  --secondary-300: #d8b4fe;
+  --secondary-400: #c084fc;
+  --secondary-500: #a855f7;
+  --secondary-600: #9333ea;
+  --secondary-700: #7c3aed;
+  --secondary-800: #6b21a8;
+  --secondary-900: #581c87;
+
+  /* Success - Green (for streaks, XP, correct answers) */
+  --success-50: #f0fdf4;
+  --success-100: #dcfce7;
+  --success-200: #bbf7d0;
+  --success-300: #86efac;
+  --success-400: #4ade80;
+  --success-500: #22c55e;
+  --success-600: #16a34a;
+  --success-700: #15803d;
+  --success-800: #166534;
+  --success-900: #14532d;
+
+  /* Warning - Amber (for streak warnings) */
+  --warning-50: #fffbeb;
+  --warning-100: #fef3c7;
+  --warning-200: #fde68a;
+  --warning-300: #fcd34d;
+  --warning-400: #fbbf24;
+  --warning-500: #f59e0b;
+  --warning-600: #d97706;
+  --warning-700: #b45309;
+  --warning-800: #92400e;
+  --warning-900: #78350f;
+
+  /* Error - Red (for errors, streak lost) */
+  --error-50: #fef2f2;
+  --error-100: #fee2e2;
+  --error-200: #fecaca;
+  --error-300: #fca5a5;
+  --error-400: #f87171;
+  --error-500: #ef4444;
+  --error-600: #dc2626;
+  --error-700: #b91c1c;
+  --error-800: #991b1b;
+  --error-900: #7f1d1d;
+
+  /* Gray - Neutral tones */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Border radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-heebo);
+  --font-mono: var(--font-heebo);
+
+  /* Map custom colors to Tailwind */
+  --color-primary-50: var(--primary-50);
+  --color-primary-100: var(--primary-100);
+  --color-primary-200: var(--primary-200);
+  --color-primary-300: var(--primary-300);
+  --color-primary-400: var(--primary-400);
+  --color-primary-500: var(--primary-500);
+  --color-primary-600: var(--primary-600);
+  --color-primary-700: var(--primary-700);
+  --color-primary-800: var(--primary-800);
+  --color-primary-900: var(--primary-900);
+
+  --color-secondary-50: var(--secondary-50);
+  --color-secondary-100: var(--secondary-100);
+  --color-secondary-200: var(--secondary-200);
+  --color-secondary-300: var(--secondary-300);
+  --color-secondary-400: var(--secondary-400);
+  --color-secondary-500: var(--secondary-500);
+  --color-secondary-600: var(--secondary-600);
+  --color-secondary-700: var(--secondary-700);
+  --color-secondary-800: var(--secondary-800);
+  --color-secondary-900: var(--secondary-900);
+
+  --color-success-50: var(--success-50);
+  --color-success-100: var(--success-100);
+  --color-success-200: var(--success-200);
+  --color-success-300: var(--success-300);
+  --color-success-400: var(--success-400);
+  --color-success-500: var(--success-500);
+  --color-success-600: var(--success-600);
+  --color-success-700: var(--success-700);
+  --color-success-800: var(--success-800);
+  --color-success-900: var(--success-900);
+
+  --color-warning-50: var(--warning-50);
+  --color-warning-100: var(--warning-100);
+  --color-warning-200: var(--warning-200);
+  --color-warning-300: var(--warning-300);
+  --color-warning-400: var(--warning-400);
+  --color-warning-500: var(--warning-500);
+  --color-warning-600: var(--warning-600);
+  --color-warning-700: var(--warning-700);
+  --color-warning-800: var(--warning-800);
+  --color-warning-900: var(--warning-900);
+
+  --color-error-50: var(--error-50);
+  --color-error-100: var(--error-100);
+  --color-error-200: var(--error-200);
+  --color-error-300: var(--error-300);
+  --color-error-400: var(--error-400);
+  --color-error-500: var(--error-500);
+  --color-error-600: var(--error-600);
+  --color-error-700: var(--error-700);
+  --color-error-800: var(--error-800);
+  --color-error-900: var(--error-900);
+
+  /* Light background variants (from Modernize template) */
+  /* Use: bg-lightprimary, text-primary for cards/badges */
+  --color-lightprimary: var(--primary-100);
+  --color-lightsecondary: var(--secondary-100);
+  --color-lightsuccess: var(--success-100);
+  --color-lightwarning: var(--warning-100);
+  --color-lighterror: var(--error-100);
+  --color-lightinfo: var(--primary-100);
+
+  /* Semantic shorthand colors */
+  --color-primary: var(--primary-600);
+  --color-secondary: var(--secondary-600);
+  --color-success: var(--success-600);
+  --color-warning: var(--warning-600);
+  --color-error: var(--error-600);
+  --color-info: var(--primary-500);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Dark mode - class based */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
+/* Base styles */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-heebo), system-ui, sans-serif;
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+/* Math/LaTeX specific styles */
+.katex {
+  font-size: 1.1em;
+}
+
+.math-display {
+  overflow-x: auto;
+  padding: var(--space-4);
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  margin: var(--space-4) 0;
+}
+
+/* XP/Level badge animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+  }
+}
+
+.xp-gain {
+  animation: pulse-glow 1s ease-in-out;
+}
+
+/* Streak fire animation */
+@keyframes flame {
+  0%, 100% {
+    transform: scale(1) rotate(-2deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(2deg);
+  }
+}
+
+.streak-fire {
+  animation: flame 0.5s ease-in-out infinite;
+}
+
+/* Sidebar Styles */
+.menu-sidebar {
+  flex-shrink: 0;
+  transition: width 0.2s ease-in;
+}
+
+/* Dashboard Layout - account for sidebar */
+@media (min-width: 1280px) {
+  [data-collapsed="true"] .xl\:ms-\[270px\] {
+    margin-inline-start: 75px;
+  }
+}
+
+/* Flowbite Overrides */
+.flowbite-sidebar {
+  background: transparent !important;
+}
+
+/* RTL Sidebar Support */
+[dir="rtl"] .menu-sidebar {
+  left: auto;
+  right: 0;
+  border-left: 1px solid var(--gray-200);
+  border-right: none;
+}
+
+[dir="rtl"] .xl\:ms-\[270px\] {
+  margin-inline-start: 270px;
+  margin-inline-end: 0;
+}
+
+/* ===== Landing Page Animations ===== */
+
+/* Banner Slider Container */
+.bannerSlider {
+  padding: 25.6px;
+  min-width: 2000px;
+  height: calc(100vh - 100px);
+  max-height: 790px;
+  border-radius: 7px;
+}
+
+/* Vertical slide up animation */
+.animateUp {
+  animation: slideup 35s linear infinite;
+  height: 800px;
+}
+
+@keyframes slideup {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(0px, -100%, 0px);
+  }
+}
+
+/* Vertical slide down animation */
+.animateDown {
+  animation: slideDown 35s linear infinite;
+  height: 800px;
+}
+
+@keyframes slideDown {
+  0% {
+    transform: translate3d(0, -100%, 0);
+  }
+  100% {
+    transform: translate3d(0px, 0, 0px);
+  }
+}
+
+/* Horizontal infinite slider */
+.slider-group {
+  animation: slide 45s linear infinite;
+}
+
+@keyframes slide {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-100%, 0, 0);
+  }
+}
+
+/* ===== React Slick Carousel Styles ===== */
+.client-reviews .slick-track {
+  display: flex;
+  gap: 30px;
+  padding: 10px 0;
+}
+
+.client-reviews .slick-dots li button:before {
+  font-size: 10px;
+  color: var(--gray-400);
+}
+
+.client-reviews .slick-dots {
+  bottom: -40px;
+}
+
+.client-reviews .slick-dots li.slick-active button:before {
+  color: var(--primary-600);
+  opacity: 1;
+}
+
+.client-reviews .slick-dots li {
+  margin: 0 1px;
+}
+
+.client-reviews .slick-dots li button:hover::before {
+  color: var(--primary-600);
+  opacity: 1;
+}
+
+@media screen and (max-width: 1199px) {
+  .client-reviews .slick-track {
+    gap: 10px;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .client-reviews .slick-track {
+    gap: 0;
+  }
+}
+
+/* Light gray background for testimonial cards */
+.bg-lightgray {
+  background-color: var(--gray-100);
+}
+
+/* Text description opacity helper */
+.text-ld {
+  color: var(--gray-600);
+}
+
+/* ===== Toast Animations ===== */
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(100%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toast-slide-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%) scale(0.96);
+  }
+}
+
+@keyframes toast-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes toast-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Toast animation - uses Radix data attributes */
+[data-state="open"].toast-animated {
+  animation: toast-slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-state="closed"].toast-animated {
+  animation: toast-slide-out 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-swipe="end"].toast-animated {
+  animation: toast-slide-out 0.15s ease-out forwards;
 }

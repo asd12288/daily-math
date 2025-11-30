@@ -1,0 +1,575 @@
+{
+  "app": {
+    "name": "DailyMath",
+    "tagline": "לשלוט במתמטיקה, יום אחד בכל פעם"
+  },
+  "common": {
+    "loading": "טוען...",
+    "error": "משהו השתבש",
+    "save": "שמור",
+    "cancel": "ביטול",
+    "delete": "מחק",
+    "edit": "ערוך",
+    "back": "חזור",
+    "next": "הבא",
+    "previous": "הקודם",
+    "submit": "שלח",
+    "close": "סגור",
+    "start": "התחל",
+    "continue": "המשך",
+    "tryAgain": "נסה שוב",
+    "minutes": "דקות",
+    "refresh": "רענן"
+  },
+  "nav": {
+    "home": "בית",
+    "courses": "קורסים",
+    "history": "היסטוריה",
+    "settings": "הגדרות",
+    "profile": "פרופיל",
+    "devDesign": "מערכת עיצוב",
+    "devAI": "בדיקת AI",
+    "adminQuestions": "בנק שאלות"
+  },
+  "auth": {
+    "back": "חזרה",
+    "login": "התחברות",
+    "register": "הרשמה",
+    "logout": "התנתקות",
+    "email": "אימייל",
+    "password": "סיסמה",
+    "confirmPassword": "אישור סיסמה",
+    "displayName": "שם תצוגה",
+    "name": "שם מלא",
+    "forgotPassword": "שכחת סיסמה?",
+    "noAccount": "אין לך חשבון?",
+    "hasAccount": "כבר יש לך חשבון?",
+    "loginSuccess": "ברוך הבא!",
+    "registerSuccess": "החשבון נוצר בהצלחה!",
+    "welcomeBack": "ברוך שובך",
+    "loginSubtitle": "התחבר כדי להמשיך את מסע הלמידה שלך",
+    "createAccount": "יצירת חשבון",
+    "registerSubtitle": "התחל את המסע שלך לשליטה במתמטיקה היום",
+    "signIn": "התחבר",
+    "orSignInWith": "או התחבר באמצעות",
+    "orSignUpWith": "או הירשם באמצעות",
+    "forgotPasswordSubtitle": "הכנס את האימייל שלך ונשלח לך קישור לאיפוס",
+    "backToLogin": "חזרה להתחברות",
+    "checkEmail": "בדוק את האימייל שלך",
+    "resetEmailSent": "שלחנו לך קישור לאיפוס סיסמה. אנא בדוק את תיבת הדואר שלך.",
+    "sendResetLink": "שלח קישור איפוס",
+    "errors": {
+      "emailRequired": "אימייל נדרש",
+      "emailInvalid": "אנא הכנס אימייל תקין",
+      "passwordRequired": "סיסמה נדרשת",
+      "passwordMin": "הסיסמה חייבת להכיל לפחות 8 תווים",
+      "passwordMismatch": "הסיסמאות אינן תואמות",
+      "displayNameRequired": "שם תצוגה נדרש",
+      "nameRequired": "שם נדרש",
+      "invalidCredentials": "אימייל או סיסמה שגויים",
+      "emailExists": "חשבון עם אימייל זה כבר קיים"
+    }
+  },
+  "dashboard": {
+    "welcome": "בוקר טוב",
+    "todaysSet": "הסט של היום",
+    "exercises": "תרגילים",
+    "minutes": "דקות",
+    "startPractice": "התחל תרגול",
+    "yourProgress": "ההתקדמות שלך",
+    "level": "רמה",
+    "totalXP": "סה״כ XP",
+    "nextLevel": "רמה הבאה",
+    "toNextLevel": "לרמה הבאה",
+    "streakCalendar": "לוח רצף",
+    "currentStreak": "רצף נוכחי",
+    "days": "ימים"
+  },
+  "practice": {
+    "exerciseOf": "תרגיל {current} מתוך {total}",
+    "question": "שאלה",
+    "solution": "פתרון",
+    "answer": "תשובה",
+    "tip": "טיפ",
+    "markDone": "סמן כבוצע",
+    "uploadHandwork": "העלה את העבודה בכתב יד שלך",
+    "uploadHandworkDesc": "צלם תמונה של העבודה שלך לכל השאלות (אופציונלי)",
+    "completed": "הושלם!",
+    "xpEarned": "+{xp} XP",
+    "showSolution": "הצג פתרון",
+    "hideSolution": "הסתר פתרון",
+    "solutionSteps": "שלבי הפתרון",
+    "enterAnswer": "הכנס את התשובה שלך...",
+    "skip": "דלג",
+    "needHelp": "צריך עזרה?",
+    "finish": "סיום",
+    "correct": "נכון",
+    "incorrect": "לא נכון",
+    "skipped": "דולג",
+    "xpEarnedMessage": "+{xp} XP הושגו!",
+    "startPractice": "התחל תרגול",
+    "resumePractice": "המשך תרגול",
+    "allCompleted": "הכל הושלם!",
+    "problemsCompleted": "{completed} מתוך {total} בעיות הושלמו",
+    "slots": {
+      "review": "חזרה",
+      "core": "ליבה",
+      "foundation": "יסודות",
+      "challenge": "אתגר"
+    },
+    "difficulty": {
+      "easy": "קל",
+      "medium": "בינוני",
+      "hard": "קשה"
+    },
+    "topicPractice": "תרגול נושא",
+    "preparingSession": "מכין את מפגש התרגול שלך...",
+    "sessionError": "שגיאת מפגש",
+    "couldNotLoadSession": "לא הצלחנו לטעון את מפגש התרגול. נסה שוב.",
+    "nextProblem": "תרגיל הבא",
+    "finishSession": "סיים מפגש",
+    "sessionComplete": "המפגש הושלם!",
+    "completedTopic": "השלמת מפגש תרגול ב{topic}",
+    "problemsSolved": "תרגילים שנפתרו",
+    "earned": "הושג",
+    "practiceAgain": "תרגל שוב",
+    "backToCourse": "חזור לקורס",
+    "backToDashboard": "חזור ללוח הבקרה",
+    "greatJob": "עבודה מצוינת! המשך כך!",
+    "reviewSolution": "עיין בפתרון למטה",
+    "helpComingSoon": "מורה AI בקרוב! בינתיים, בדוק את הרמז.",
+    "yourAnswer": "התשובה שלך",
+    "correctAnswer": "התשובה הנכונה",
+    "notSure": "לא בטוח (דלג על שאלה זו)",
+    "showHint": "הצג רמז",
+    "optional": "אופציונלי",
+    "chooseFile": "בחר קובץ",
+    "progress": "התקדמות",
+    "answered": "נענו",
+    "submitAll": "שלח את כל התשובות",
+    "worksheetInstructions": "ענה על כל השאלות ואז לחץ שלח. אתה יכול לדלג על שאלות שאתה לא בטוח בהן.",
+    "days": "ימים",
+    "reviewAnswers": "סקור את התשובות שלך",
+    "loadingExercises": "טוען את התרגילים שלך",
+    "preparingYourSet": "מכין את סט התרגול היומי שלך...",
+    "errorLoadingSet": "לא ניתן לטעון תרגילים",
+    "noSetAvailable": "אין סט תרגול זמין",
+    "setGenerating": "סט התרגול שלך בהכנה. נסה שוב בעוד רגע.",
+    "savingAnswers": "שומר את התשובות שלך",
+    "savingProgress": "שומר {current} מתוך {total}...",
+    "todaysPractice": "התרגול של היום",
+    "questions": "שאלות"
+  },
+  "courses": {
+    "title": "בחר את הקורסים שלך",
+    "subtitle": "בחר את הנושאים שתרצה לתרגל יומיום",
+    "topics": "נושאים",
+    "comingSoon": "בקרוב",
+    "savePreferences": "שמור העדפות"
+  },
+  "settings": {
+    "title": "הגדרות",
+    "subtitle": "נהל את ההעדפות והחשבון שלך",
+    "loading": "טוען הגדרות...",
+    "error": "לא ניתן לטעון הגדרות",
+    "errorDesc": "נסה לרענן את הדף",
+    "comingSoon": "בקרוב",
+    "profile": {
+      "title": "פרופיל",
+      "description": "המידע האישי שלך",
+      "displayName": "שם תצוגה",
+      "email": "אימייל",
+      "avatar": "תמונת פרופיל",
+      "emailLocked": "האימייל מקושר לחשבון שלך"
+    },
+    "practice": {
+      "title": "העדפות תרגול",
+      "description": "התאם את התרגול היומי שלך",
+      "exerciseCount": "מספר תרגילים יומי",
+      "exerciseCountDesc": "כמה תרגילים ליום?",
+      "perDay": "תרגילים/יום",
+      "preferredTime": "שעת תרגול מועדפת",
+      "preferredTimeDesc": "מתי נזכיר לך?",
+      "estimatedTime": "זמן משוער",
+      "potentialXp": "XP פוטנציאלי",
+      "minutes": "דק׳",
+      "highCountWarning": "זה שאפתני! וודא שיש לך מספיק זמן להשלים את כל התרגילים."
+    },
+    "notifications": {
+      "title": "התראות",
+      "description": "שלוט באופן שבו אנחנו יוצרים קשר",
+      "dailyReminder": "תזכורת יומית",
+      "dailyReminderDesc": "קבל תזכורת להשלים את התרגילים היומיים",
+      "streakWarning": "אזהרת רצף",
+      "streakWarningDesc": "קבל הודעה לפני שהרצף שלך עומד להישבר",
+      "weeklyReport": "דוח שבועי",
+      "weeklyReportDesc": "קבל סיכום שבועי של ההתקדמות שלך"
+    },
+    "language": {
+      "title": "שפה ותצוגה",
+      "description": "בחר את השפה והמראה שלך",
+      "theme": "ערכת נושא",
+      "themeDesc": "בהיר, כהה או מערכת"
+    },
+    "integrations": {
+      "title": "אינטגרציות",
+      "description": "חבר שירותים חיצוניים",
+      "notion": "Notion",
+      "notConnected": "לא מחובר",
+      "connect": "חבר"
+    }
+  },
+  "skillTree": {
+    "title": "עץ המיומנויות",
+    "subtitle": "מסלול הלמידה שלך דרך אלגברה לפני חדו״א",
+    "yourProgress": "ההתקדמות שלך",
+    "topicsMastered": "נושאים הושלמו",
+    "complete": "הושלם",
+    "currentFocus": "מיקוד נוכחי",
+    "locked": "נעול",
+    "available": "זמין",
+    "inProgress": "בתהליך",
+    "mastered": "הושלם",
+    "branches": {
+      "foundations": "יסודות",
+      "linear": "אלגברה ליניארית",
+      "polynomials": "פולינומים",
+      "quadratics": "משוואות ריבועיות",
+      "functions": "פונקציות"
+    }
+  },
+  "gamification": {
+    "streak": "רצף",
+    "xp": "XP",
+    "level": "רמה",
+    "titles": {
+      "1": "מתחיל",
+      "2": "תלמיד",
+      "3": "לומד",
+      "4": "מתרגל",
+      "5": "חכם",
+      "6": "מומחה",
+      "7": "אמן",
+      "8": "גראנדמאסטר",
+      "9": "אגדה",
+      "10": "חכם עליון"
+    }
+  },
+  "sidebar": {
+    "main": "ראשי",
+    "account": "חשבון",
+    "learning": "למידה",
+    "developer": "מפתחים",
+    "admin": "ניהול"
+  },
+  "difficulty": {
+    "easy": "קל",
+    "medium": "בינוני",
+    "hard": "קשה"
+  },
+  "answerType": {
+    "numeric": "מספרי",
+    "expression": "ביטוי",
+    "proof": "הוכחה",
+    "open": "פתוח"
+  },
+  "admin": {
+    "title": "ניהול",
+    "save": "שמור",
+    "cancel": "ביטול",
+    "close": "סגור",
+    "confirmDelete": "האם אתה בטוח שברצונך למחוק שאלה זו?",
+    "confirmBulkDelete": "האם אתה בטוח שברצונך למחוק את השאלות שנבחרו?",
+    "questions": {
+      "title": "בנק שאלות",
+      "subtitle": "נהל את כל השאלות במערכת",
+      "add": "הוסף שאלה",
+      "addTitle": "הוסף שאלה חדשה",
+      "edit": "ערוך",
+      "editTitle": "ערוך שאלה",
+      "delete": "מחק",
+      "view": "צפה",
+      "preview": "תצוגה מקדימה"
+    },
+    "filters": {
+      "course": "קורס",
+      "topic": "נושא",
+      "difficulty": "רמת קושי",
+      "type": "סוג",
+      "search": "חיפוש",
+      "searchPlaceholder": "חפש שאלות...",
+      "clear": "נקה סינונים",
+      "allCourses": "כל הקורסים",
+      "allTopics": "כל הנושאים",
+      "allDifficulties": "כל רמות הקושי",
+      "allTypes": "כל הסוגים"
+    },
+    "table": {
+      "question": "שאלה",
+      "course": "קורס",
+      "topic": "נושא",
+      "difficulty": "רמת קושי",
+      "type": "סוג",
+      "status": "סטטוס",
+      "actions": "פעולות"
+    },
+    "form": {
+      "course": "קורס",
+      "topic": "נושא",
+      "selectCourse": "בחר קורס",
+      "selectTopic": "בחר נושא",
+      "question": "שאלה",
+      "questionHe": "שאלה (עברית)",
+      "questionPlaceholder": "הכנס את טקסט השאלה (תומך LaTeX עם $...$)",
+      "questionHePlaceholder": "הכנס תרגום לעברית",
+      "solution": "פתרון",
+      "solutionHe": "פתרון (עברית)",
+      "solutionPlaceholder": "הכנס פתרון מפורט צעד אחר צעד",
+      "solutionHePlaceholder": "הכנס תרגום לעברית",
+      "answer": "תשובה נכונה",
+      "answerPlaceholder": "לדוגמה: 42 או x^2 + 1",
+      "difficulty": "רמת קושי",
+      "answerType": "סוג תשובה",
+      "estimatedTime": "זמן משוער",
+      "hints": "רמזים",
+      "tags": "תגיות",
+      "tagPlaceholder": "הוסף תגית ולחץ Enter",
+      "active": "פעיל (גלוי למשתמשים)",
+      "latexHint": "טיפ: השתמש ב-$...$ למתמטיקה בתוך שורה ו-$$...$$ לתצוגה"
+    },
+    "status": {
+      "active": "פעיל",
+      "inactive": "לא פעיל"
+    },
+    "stats": {
+      "total": "סה״כ שאלות",
+      "active": "פעילות",
+      "medium": "בינוניות",
+      "hard": "קשות"
+    },
+    "bulk": {
+      "selected": "{count} נבחרו",
+      "activate": "הפעל",
+      "deactivate": "בטל",
+      "delete": "מחק"
+    },
+    "pagination": {
+      "showing": "מציג {start}-{end} מתוך {total}",
+      "perPage": "לעמוד:"
+    },
+    "preview": {
+      "question": "שאלה",
+      "answer": "תשובה נכונה",
+      "solution": "פתרון",
+      "hints": "רמזים",
+      "tags": "תגיות"
+    },
+    "messages": {
+      "loading": "טוען שאלות...",
+      "noQuestions": "לא נמצאו שאלות",
+      "noQuestionsDesc": "אין שאלות שמתאימות לסינון הנוכחי. נסה לשנות את החיפוש או הוסף שאלה חדשה.",
+      "created": "השאלה נוצרה בהצלחה",
+      "updated": "השאלה עודכנה בהצלחה",
+      "deleted": "השאלה נמחקה בהצלחה",
+      "error": "אירעה שגיאה"
+    }
+  },
+  "landing": {
+    "header": {
+      "login": "התחברות",
+      "register": "הרשמה",
+      "dashboard": "לוח בקרה"
+    },
+    "hero": {
+      "badge": "התחל את המסע המתמטי שלך",
+      "title": "לשלוט במתמטיקה עם",
+      "titleHighlight": "תרגול יומי",
+      "subtitle": "תרגילים מונעי AI, אימות עבודת יד ומשחוק שיעזרו לך להצליח בקורסי המתמטיקה והפיזיקה.",
+      "getStarted": "התחל בחינם",
+      "learnMore": "איך זה עובד"
+    },
+    "howItWorks": {
+      "badge": "תהליך פשוט",
+      "title": "איך DailyMath עובד",
+      "step1": {
+        "title": "בחר את התרגילים שלך",
+        "desc": "בחר 1-10 תרגילים ליום ובחר את הקורסים שלך. התאם אישית את שגרת התרגול היומית."
+      },
+      "step2": {
+        "title": "תרגל יומיום",
+        "desc": "פתור בעיות על נייר, ואז העלה את העבודה שלך לאימות AI או סמן בעצמך."
+      },
+      "step3": {
+        "title": "עקוב והתקדם",
+        "desc": "צבור XP, שמור על רצפים ועלה רמות ככל שתשלוט במושגים חדשים."
+      }
+    },
+    "features": {
+      "badge": "למה DailyMath?",
+      "title": "כל מה שאתה צריך כדי להצליח",
+      "items": {
+        "daily": {
+          "title": "תרגילים יומיים",
+          "desc": "בעיות חדשות שנוצרו ע״י AI מגיעות כל יום כדי לשמור על הכישורים שלך חדים."
+        },
+        "ai": {
+          "title": "תוכן מונע AI",
+          "desc": "שאלות, פתרונות וטיפים מופעלים ע״י AI מתקדם לתוכן איכותי."
+        },
+        "handwork": {
+          "title": "אימות עבודת יד",
+          "desc": "העלה תמונות של הפתרונות בכתב היד שלך לניתוח AI מיידי."
+        },
+        "xp": {
+          "title": "XP ורמות",
+          "desc": "צבור נקודות ניסיון והתקדם דרך 10 רמות ככל שאתה לומד."
+        },
+        "streak": {
+          "title": "מערכת רצפים",
+          "desc": "בנה הרגלים יומיים עם רצפים ובונוס XP על עקביות."
+        },
+        "bilingual": {
+          "title": "תמיכה דו-לשונית",
+          "desc": "תמיכה מלאה בעברית ואנגלית עם ממשק RTL."
+        }
+      }
+    },
+    "showcase": {
+      "badge": "ראה את זה בפעולה",
+      "title": "לוח בקרה יפה וחווית תרגול מעולה"
+    },
+    "testimonials": {
+      "badge": "ביקורות סטודנטים",
+      "title": "אל תסמכו רק על המילה שלנו",
+      "reviews": {
+        "0": {
+          "text": "DailyMath עזר לי להצליח במבחן החדו״א! שגרת התרגול היומית עשתה את כל ההבדל."
+        },
+        "1": {
+          "text": "מערכת הרצפים שומרת אותי מוטיבציוני כל יום. לא פספסתי אימון ב-30 יום!"
+        },
+        "2": {
+          "text": "סוף סוף מבין נגזרות בזכות המשוב של ה-AI על הפתרונות בכתב יד שלי."
+        },
+        "3": {
+          "text": "ה-XP ומערכת הרמות הופכים את התרגול למשחק. מומלץ בחום!"
+        },
+        "4": {
+          "text": "אוהב את התמיכה בעברית. זה מושלם לסטודנטים ישראלים כמוני."
+        },
+        "5": {
+          "text": "השאלות שנוצרו ע״י AI מאתגרות אבל הוגנות. מעולה להכנה למבחנים!"
+        }
+      }
+    },
+    "pricing": {
+      "badge": "תוכניות מחירים",
+      "title": "מחירים פשוטים ושקופים",
+      "subtitle": "התחל בחינם, שדרג כשתהיה מוכן ליותר תכונות.",
+      "popular": "פופולרי",
+      "free": {
+        "name": "חינם",
+        "price": "₪0",
+        "period": "/לתמיד",
+        "desc": "מושלם להתחלה",
+        "features": {
+          "0": "3 תרגילים ליום",
+          "1": "סימון עצמי בלבד",
+          "2": "מעקב התקדמות בסיסי",
+          "3": "קורס אחד כלול"
+        },
+        "button": "התחל בחינם"
+      },
+      "premium": {
+        "name": "פרימיום",
+        "price": "₪39.99",
+        "period": "/חודש",
+        "desc": "לסטודנטים רציניים",
+        "features": {
+          "0": "עד 10 תרגילים ליום",
+          "1": "אימות עבודת יד ע״י AI",
+          "2": "ניתוחים ותובנות מלאים",
+          "3": "כל הקורסים כלולים",
+          "4": "תמיכה בעדיפות",
+          "5": "שילוב Notion"
+        },
+        "button": "עבור לפרימיום"
+      }
+    },
+    "cta": {
+      "title": "מוכן לשלוט במתמטיקה?",
+      "subtitle": "הצטרף לאלפי סטודנטים שמשפרים את הציונים שלהם עם תרגול יומי.",
+      "button": "התחל את המסע החינמי שלך",
+      "learnMore": "למד עוד"
+    },
+    "footer": {
+      "rights": "כל הזכויות שמורות ל-DailyMath.",
+      "madeBy": "עיצוב ופיתוח על ידי"
+    }
+  },
+  "onboarding": {
+    "welcome": {
+      "title": "ברוכים הבאים ל-DailyMath!",
+      "subtitle": "בנה את כישורי המתמטיקה שלך עם תרגול יומי מותאם אישית. בואו נגדיר את מסע הלמידה שלך.",
+      "feature1Title": "תרגול יומי",
+      "feature1Desc": "5 תרגילים מותאמים אישית כל יום",
+      "feature2Title": "מורה AI",
+      "feature2Desc": "קבל רמזים שמנחים אותך לתשובה",
+      "feature3Title": "מעקב התקדמות",
+      "feature3Desc": "צפה בכישורים שלך צומחים עם הזמן",
+      "getStarted": "בואו נתחיל"
+    },
+    "experience": {
+      "title": "מה הניסיון שלך באלגברה?",
+      "subtitle": "זה עוזר לנו להתאים אישית את נקודת ההתחלה שלך",
+      "beginner": {
+        "title": "רק מתחיל",
+        "description": "חדש באלגברה או צריך להתחיל מהיסודות"
+      },
+      "some": {
+        "title": "קצת ניסיון",
+        "description": "מכיר את היסודות אבל צריך עוד תרגול"
+      },
+      "comfortable": {
+        "title": "נוח לי",
+        "description": "יכול לפתור רוב הבעיות עם קצת מאמץ"
+      },
+      "advanced": {
+        "title": "מתקדם",
+        "description": "יסודות חזקים, מחפש אתגרים"
+      }
+    },
+    "diagnostic": {
+      "title": "הערכה מהירה",
+      "subtitle": "ענה על כמה שאלות כדי למצוא את הרמה שלך",
+      "progress": "שאלה {current} מתוך {total}",
+      "noQuestions": "אין שאלות זמינות",
+      "correctAnswer": "תשובה נכונה",
+      "seeResults": "ראה תוצאות"
+    },
+    "results": {
+      "title": "התוצאות שלך",
+      "excellent": "מצוין! יש לך בסיס חזק.",
+      "good": "עבודה מצוינת! אתה בדרך הנכונה.",
+      "developing": "התחלה טובה! נעזור לך להשתפר.",
+      "starting": "אל דאגה! נתחיל מהיסודות.",
+      "correct": "נכון",
+      "total": "סה״כ",
+      "accuracy": "דיוק",
+      "topicBreakdown": "פירוט לפי נושא",
+      "recommendation": "המסלול המותאם שלך",
+      "recommendationText": "בהתבסס על התוצאות שלך, אנחנו ממליצים להתחיל עם {topic}.",
+      "continue": "המשך"
+    },
+    "preferences": {
+      "title": "כמעט סיימנו!",
+      "subtitle": "הגדר את העדפות התרגול היומי שלך",
+      "dailyGoal": "יעד תרגול יומי",
+      "problemsPerDay": "תרגילים ליום",
+      "estimatedTime": "~{minutes} דקות ליום",
+      "reminder": "תזכורת יומית",
+      "reminderNote": "נזכיר לך לתרגל",
+      "startLearning": "התחל ללמוד"
+    }
+  }
+}

@@ -39,3 +39,26 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Windows reserved names
+nul
+NUL
+con
+CON
+aux
+AUX
+
+# IDE
+.idea/
+*.swp
+*.swo
+.vscode/
+
+# Claude
+.claude/settings.local.json
+
+# Logs
+*.log
+
+# OS files
+Thumbs.db
