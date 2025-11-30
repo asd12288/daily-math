@@ -40,6 +40,7 @@ export const mockCourses = [
     topics: ["Order of Operations", "Fractions & Decimals", "Basic Equations", "Linear Equations", "Word Problems"],
     exerciseCount: 470,
     enrolled: true,
+    comingSoon: false,
   },
 ];
 
