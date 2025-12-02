@@ -178,6 +178,100 @@ export const SCHEMA = {
         { key: "user_time_idx", type: "key", attributes: ["userId", "submittedAt"], orders: ["ASC", "DESC"] },
       ],
     },
+
+    // ============================================
+    // Topic-Centric Learning Collections
+    // ============================================
+
+    topics: {
+      name: "topics",
+      description: "Individual study topics within courses",
+      attributes: [
+        { key: "courseId", type: "string", size: 36, required: true },
+        { key: "name", type: "string", size: 200, required: true },
+        { key: "nameHe", type: "string", size: 200, required: true },
+        { key: "description", type: "string", size: 2000, required: true },
+        { key: "descriptionHe", type: "string", size: 2000, required: false },
+        { key: "branchId", type: "string", size: 50, required: true },
+        { key: "prerequisites", type: "string", size: 1000, required: false, default: "[]" }, // JSON array of topic IDs
+        { key: "order", type: "integer", min: 0, required: true },
+        { key: "difficultyLevels", type: "string", size: 100, required: false, default: '["easy","medium","hard"]' }, // JSON array
+        { key: "questionTypes", type: "string", size: 500, required: false }, // JSON array for AI prompts
+        { key: "keywords", type: "string", size: 500, required: false }, // JSON array for search
+        { key: "theoryContent", type: "string", size: 20000, required: false }, // Markdown for Learn tab
+        { key: "theoryContentHe", type: "string", size: 20000, required: false },
+        { key: "videoIds", type: "string", size: 1000, required: false }, // JSON array of YouTube IDs
+        { key: "isActive", type: "boolean", default: true, required: false },
+        { key: "estimatedMinutes", type: "integer", min: 5, max: 120, required: false },
+      ],
+      indexes: [
+        { key: "courseId_idx", type: "key", attributes: ["courseId"] },
+        { key: "branchId_idx", type: "key", attributes: ["branchId"] },
+        { key: "course_order_idx", type: "key", attributes: ["courseId", "order"] },
+        { key: "name_fulltext", type: "fulltext", attributes: ["name"] },
+      ],
+    },
+
+    topic_formulas: {
+      name: "topic_formulas",
+      description: "Formulas and equations for topics (cheat sheets)",
+      attributes: [
+        { key: "topicId", type: "string", size: 36, required: true },
+        { key: "courseId", type: "string", size: 36, required: true },
+        { key: "title", type: "string", size: 200, required: true },
+        { key: "titleHe", type: "string", size: 200, required: false },
+        { key: "latex", type: "string", size: 2000, required: true }, // LaTeX formula content
+        { key: "explanation", type: "string", size: 1000, required: false },
+        { key: "explanationHe", type: "string", size: 1000, required: false },
+        { key: "category", type: "string", size: 100, required: false }, // e.g., "derivatives", "limits"
+        { key: "sortOrder", type: "integer", min: 0, default: 0, required: false },
+        { key: "tags", type: "string", size: 500, required: false }, // JSON array
+        { key: "isCore", type: "boolean", default: false, required: false }, // Mark essential formulas
+      ],
+      indexes: [
+        { key: "topicId_idx", type: "key", attributes: ["topicId"] },
+        { key: "topic_order_idx", type: "key", attributes: ["topicId", "sortOrder"] },
+        { key: "courseId_idx", type: "key", attributes: ["courseId"] },
+      ],
+    },
+
+    topic_videos: {
+      name: "topic_videos",
+      description: "YouTube video tutorials linked to topics",
+      attributes: [
+        { key: "videoId", type: "string", size: 20, required: true }, // YouTube video ID
+        { key: "topicId", type: "string", size: 36, required: true },
+        { key: "courseId", type: "string", size: 36, required: true },
+        { key: "title", type: "string", size: 300, required: true },
+        { key: "titleHe", type: "string", size: 300, required: false },
+        { key: "channelName", type: "string", size: 150, required: true },
+        { key: "thumbnailUrl", type: "string", size: 500, required: true },
+        { key: "duration", type: "string", size: 10, required: false }, // e.g., "12:34"
+        { key: "durationSeconds", type: "integer", min: 0, required: false },
+        {
+          key: "language",
+          type: "enum",
+          elements: ["en", "he", "other"],
+          required: true,
+        },
+        { key: "sortOrder", type: "integer", min: 0, default: 0, required: false },
+        {
+          key: "source",
+          type: "enum",
+          elements: ["curated", "api"],
+          default: "curated",
+          required: false,
+        },
+        { key: "description", type: "string", size: 2000, required: false },
+        { key: "isActive", type: "boolean", default: true, required: false },
+      ],
+      indexes: [
+        { key: "topicId_idx", type: "key", attributes: ["topicId"] },
+        { key: "topic_order_idx", type: "key", attributes: ["topicId", "sortOrder"] },
+        { key: "courseId_idx", type: "key", attributes: ["courseId"] },
+        { key: "language_idx", type: "key", attributes: ["language"] },
+      ],
+    },
   },
 
   buckets: {

@@ -45,6 +45,18 @@ export const SidebarContent: SidebarSection[] = [
         icon: "tabler:book",
         url: "/courses",
       },
+      {
+        id: "history",
+        name: "nav.history",
+        icon: "tabler:history",
+        url: "/history",
+      },
+      {
+        id: "homework",
+        name: "nav.homework",
+        icon: "tabler:clipboard-list",
+        url: "/homework",
+      },
     ],
   },
   {
@@ -68,27 +80,6 @@ export const SidebarContent: SidebarSection[] = [
         icon: "tabler:database",
         url: "/admin/questions",
         requiredRole: "admin",
-      },
-    ],
-  },
-  {
-    heading: "developer",
-    children: [
-      {
-        id: "dev-design",
-        name: "nav.devDesign",
-        icon: "tabler:palette",
-        url: "/dev-design",
-        badge: "DEV",
-        badgeColor: "secondary",
-      },
-      {
-        id: "dev-ai",
-        name: "nav.devAI",
-        icon: "tabler:brain",
-        url: "/dev-ai",
-        badge: "AI",
-        badgeColor: "primary",
       },
     ],
   },

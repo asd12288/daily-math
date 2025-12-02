@@ -45,6 +45,8 @@ export function WorksheetResults({
         return "from-warning-500 to-warning-600";
       case "needs_work":
         return "from-gray-500 to-gray-600";
+      case "all_skipped":
+        return "from-gray-400 to-gray-500";
       default:
         return "from-primary-500 to-primary-600";
     }
@@ -60,6 +62,8 @@ export function WorksheetResults({
         return "tabler:thumb-up";
       case "needs_work":
         return "tabler:book";
+      case "all_skipped":
+        return "tabler:player-skip-forward";
       default:
         return "tabler:check";
     }

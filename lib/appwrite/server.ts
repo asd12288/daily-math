@@ -1,7 +1,7 @@
 // lib/appwrite/server.ts
 // Server-side Appwrite clients for Next.js SSR
 
-import { Client, Account, Databases, Users } from "node-appwrite";
+import { Client, Account, Databases, Users, Storage } from "node-appwrite";
 import { cookies } from "next/headers";
 
 const SESSION_COOKIE = "session";
@@ -27,6 +27,9 @@ export async function createAdminClient() {
     },
     get users() {
       return new Users(client);
+    },
+    get storage() {
+      return new Storage(client);
     },
   };
 }

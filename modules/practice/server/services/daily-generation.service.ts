@@ -24,55 +24,65 @@ export interface DailyGenerationResult {
 }
 
 /**
- * Generate all 5 problems for a user's daily set using AI
+ * Generate problems for a user's daily set using AI
+ * Uses dynamic slot counts from config (supports 1-10 problems)
  */
 export async function generateDailyProblems(
   userId: string,
   focusTopicId: string,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   config: DailySetConfig = DEFAULT_DAILY_SET_CONFIG
 ): Promise<DailyGenerationResult> {
   const focusTopic = getTopicById(focusTopicId) || TOPICS[0];
 
-  // Select topics for each slot
+  // Select topics for each slot type
   const reviewTopicId = await selectReviewTopic(userId) || TOPICS[0].id;
   const foundationTopicId = selectFoundationTopic(focusTopicId) || TOPICS[0].id;
 
   let generatedCount = 0;
   let fallbackCount = 0;
 
-  // Define the 5 problem slots with their configurations
+  // Build slot configurations dynamically from config
   const slotConfigs: Array<{
     slot: ProblemSlot;
     topicId: string;
     difficulty: Difficulty;
-  }> = [
-    { slot: "review", topicId: reviewTopicId, difficulty: "easy" },
-    { slot: "core", topicId: focusTopicId, difficulty: "medium" },
-    { slot: "core", topicId: focusTopicId, difficulty: "medium" },
-    { slot: "foundation", topicId: foundationTopicId, difficulty: "easy" },
-    { slot: "challenge", topicId: focusTopicId, difficulty: "hard" },
-  ];
+  }> = [];
+
+  // Add review slots (easy, from mastered topics)
+  for (let i = 0; i < config.slots.review; i++) {
+    slotConfigs.push({ slot: "review", topicId: reviewTopicId, difficulty: "easy" });
+  }
+
+  // Add core slots (medium, from focus topic)
+  for (let i = 0; i < config.slots.core; i++) {
+    slotConfigs.push({ slot: "core", topicId: focusTopicId, difficulty: "medium" });
+  }
+
+  // Add foundation slots (easy, from prerequisite topics)
+  for (let i = 0; i < config.slots.foundation; i++) {
+    slotConfigs.push({ slot: "foundation", topicId: foundationTopicId, difficulty: "easy" });
+  }
+
+  // Add challenge slots (hard, from focus topic)
+  for (let i = 0; i < config.slots.challenge; i++) {
+    slotConfigs.push({ slot: "challenge", topicId: focusTopicId, difficulty: "hard" });
+  }
 
   // Generate all problems in parallel
-  const problemPromises = slotConfigs.map(async (config, index) => {
+  const problemPromises = slotConfigs.map(async (slotConfig, index) => {
     try {
       const question = await generateQuestionWithRetry({
-        topicId: config.topicId,
-        difficulty: config.difficulty,
+        topicId: slotConfig.topicId,
+        difficulty: slotConfig.difficulty,
         userId,
       });
 
       generatedCount++;
-      return questionToProblem(question, config.slot, config.difficulty, index, config.topicId);
-    } catch (error) {
-      console.error(
-        `Failed to generate ${config.slot} problem for topic ${config.topicId}:`,
-        error
-      );
+      return questionToProblem(question, slotConfig.slot, slotConfig.difficulty, index, slotConfig.topicId);
+    } catch {
       fallbackCount++;
       // Return placeholder problem on failure
-      return createPlaceholderProblem(config.topicId, config.slot, config.difficulty, index);
+      return createPlaceholderProblem(slotConfig.topicId, slotConfig.slot, slotConfig.difficulty, index);
     }
   });
 
@@ -167,8 +177,7 @@ async function selectReviewTopic(userId: string): Promise<string | null> {
     }
 
     return reviewCandidates[0].id;
-  } catch (error) {
-    console.error("Failed to select review topic:", error);
+  } catch {
     return null;
   }
 }
@@ -304,8 +313,7 @@ export async function generateTopicProblems(
         estimatedMinutes: question.estimatedMinutes,
         xpReward: XP_REWARDS[diff],
       };
-    } catch (error) {
-      console.error(`Failed to generate topic problem:`, error);
+    } catch {
       return createPlaceholderProblem(topicId, "core", diff, index);
     }
   });

@@ -268,3 +268,119 @@ export const BASE_XP = {
 export function getXpReward(difficulty: ExerciseDifficulty): number {
   return XP_REWARDS[difficulty];
 }
+
+// ============================================
+// Topic-Centric Learning Types
+// ============================================
+
+// Topic Collection - Individual study topics within a course
+export interface Topic extends AppwriteDocument {
+  courseId: string;
+  name: string;
+  nameHe: string;
+  description: string;
+  descriptionHe?: string;
+  branchId: string; // Branch/category ID
+  prerequisites: string[]; // JSON string stored, parsed as array of topic IDs
+  order: number; // Display order within branch
+  difficultyLevels: ExerciseDifficulty[]; // JSON string stored, parsed as array
+  questionTypes?: string[]; // JSON string stored, for AI prompt hints
+  keywords?: string[]; // JSON string stored, for search
+  theoryContent?: string; // Markdown content for Learn tab
+  theoryContentHe?: string; // Hebrew theory content
+  videoIds?: string[]; // JSON string stored, YouTube video IDs
+  isActive: boolean;
+  estimatedMinutes?: number; // Time to learn (5-120)
+}
+
+// Topic with user stats for UI display
+export interface TopicWithStats extends Topic {
+  stats: TopicUserStats;
+  formulas: TopicFormula[];
+  questionCount: {
+    total: number;
+    byDifficulty: Record<ExerciseDifficulty, number>;
+    solved: number;
+    bookmarked: number;
+  };
+}
+
+// User stats for a specific topic
+export interface TopicUserStats {
+  topicId: string;
+  userId: string;
+  mastery: number; // 0-100
+  accuracy: number; // 0-100
+  totalTimeSeconds: number;
+  totalAttempts: number;
+  correctAttempts: number;
+  lastPracticedAt: string | null;
+  questionHistory: QuestionHistoryEntry[];
+}
+
+// Entry in question history
+export interface QuestionHistoryEntry {
+  exerciseId: string;
+  answeredAt: string;
+  isCorrect: boolean;
+  timeSeconds: number;
+}
+
+// Topic Formula Collection - Formulas/equations for a topic
+export interface TopicFormula extends AppwriteDocument {
+  topicId: string;
+  courseId: string;
+  title: string;
+  titleHe?: string;
+  latex: string; // LaTeX formula content
+  explanation?: string; // When/how to use
+  explanationHe?: string;
+  category?: string; // e.g., "derivatives", "limits"
+  sortOrder: number;
+  tags?: string[]; // JSON string stored
+  isCore: boolean; // Mark essential formulas
+}
+
+// Formula grouped by category for UI display
+export interface FormulaGroup {
+  category: string;
+  formulas: TopicFormula[];
+}
+
+// ============================================
+// Topic Video Types
+// ============================================
+
+// Video language type
+export type VideoLanguage = "en" | "he" | "other";
+
+// Video source type
+export type VideoSource = "curated" | "api";
+
+// Topic Video Collection - YouTube tutorials linked to topics
+export interface TopicVideo extends AppwriteDocument {
+  videoId: string; // YouTube video ID (e.g., "dQw4w9WgXcQ")
+  topicId: string;
+  courseId: string;
+  title: string;
+  titleHe?: string;
+  channelName: string;
+  thumbnailUrl: string;
+  duration?: string; // Human-readable format "12:34"
+  durationSeconds?: number;
+  language: VideoLanguage;
+  sortOrder: number;
+  source: VideoSource;
+  description?: string;
+  isActive: boolean;
+}
+
+// Videos grouped by language for UI display
+export interface VideosByLanguage {
+  language: VideoLanguage;
+  languageLabel: string;
+  videos: TopicVideo[];
+}
+
+// Tab types for topic detail page
+export type TopicTab = "learn" | "formulas" | "practice" | "videos" | "stats";

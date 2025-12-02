@@ -9,8 +9,8 @@ export default function CourseDetailPage() {
   const courseId = params.courseId as string;
 
   const handleTopicClick = (topicId: string) => {
-    // Navigate to topic practice page
-    router.push(`/practice/topic/${topicId}`);
+    // Navigate to topic detail page (study hub)
+    router.push(`/courses/${courseId}/topics/${topicId}`);
   };
 
   return (

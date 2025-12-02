@@ -20,6 +20,7 @@ import {
   checkPrerequisitesMet,
   MASTERY_CONSTANTS,
 } from "../../types";
+import { getCourseById } from "@/modules/courses/config/courses-data";
 
 export class SkillTreeService {
   /**
@@ -107,6 +108,121 @@ export class SkillTreeService {
         if (currentFocusTopic) break;
       }
     }
+
+    return {
+      branches,
+      currentFocusTopic,
+      overallProgress,
+      totalMastered,
+      totalTopics,
+    };
+  }
+
+  /**
+   * Get skill tree state filtered by enrolled courses (Hybrid approach)
+   * Returns only branches/topics that belong to the user's enrolled courses
+   */
+  static async getSkillTreeStateForCourses(
+    userId: string,
+    enrolledCourseIds: string[]
+  ): Promise<SkillTreeState> {
+    // Build set of enrolled branch IDs from courses
+    const enrolledBranchIds = new Set<string>();
+    for (const courseId of enrolledCourseIds) {
+      const course = getCourseById(courseId);
+      if (course) {
+        course.branchIds.forEach((branchId) => enrolledBranchIds.add(branchId));
+      }
+    }
+
+    // If no valid courses found, fall back to all branches
+    if (enrolledBranchIds.size === 0) {
+      console.log("[SkillTree] No enrolled courses found, using full skill tree");
+      return this.getSkillTreeState(userId);
+    }
+
+    // Filter BRANCHES to only enrolled ones
+    const filteredBranches = BRANCHES.filter((b) => enrolledBranchIds.has(b.id));
+
+    // Fetch all user progress for this user
+    const progressMap = await this.getUserProgressMap(userId);
+
+    // Build branches with topics and progress (only for enrolled branches)
+    const branches: BranchWithTopics[] = filteredBranches.map((branch) => {
+      const branchTopics = getTopicsByBranch(branch.id);
+
+      const topicsWithProgress: TopicWithProgress[] = branchTopics.map(
+        (topic) => {
+          const progress = progressMap.get(topic.id) || null;
+          const prereqCheck = checkPrerequisitesMet(topic.prerequisites, progressMap);
+          const status = determineTopicStatus(progress);
+          const mastery = progress ? calculateMastery(progress) : 0;
+
+          return {
+            ...topic,
+            progress,
+            status,
+            mastery,
+            canPractice: true as const,
+            hasUnmetPrerequisites: !prereqCheck.met,
+            recommendedFirst: prereqCheck.unmetTopics,
+          };
+        }
+      );
+
+      const completedCount = topicsWithProgress.filter(
+        (t) => t.status === "mastered"
+      ).length;
+
+      const overallMastery =
+        topicsWithProgress.length > 0
+          ? Math.round(
+              topicsWithProgress.reduce((sum, t) => sum + t.mastery, 0) /
+                topicsWithProgress.length
+            )
+          : 0;
+
+      return {
+        ...branch,
+        topics: topicsWithProgress,
+        overallMastery,
+        completedCount,
+        totalCount: topicsWithProgress.length,
+      };
+    });
+
+    // Calculate overall stats (only from enrolled topics)
+    const totalTopics = branches.reduce((sum, b) => sum + b.totalCount, 0);
+    const totalMastered = branches.reduce((sum, b) => sum + b.completedCount, 0);
+    const overallProgress = totalTopics > 0
+      ? Math.round((totalMastered / totalTopics) * 100)
+      : 0;
+
+    // Find current focus topic (first in_progress or first not_started within enrolled courses)
+    let currentFocusTopic: string | null = null;
+    for (const branch of branches) {
+      for (const topic of branch.topics) {
+        if (topic.status === "in_progress") {
+          currentFocusTopic = topic.id;
+          break;
+        }
+      }
+      if (currentFocusTopic) break;
+    }
+
+    if (!currentFocusTopic) {
+      for (const branch of branches) {
+        for (const topic of branch.topics) {
+          if (topic.status === "not_started") {
+            currentFocusTopic = topic.id;
+            break;
+          }
+        }
+        if (currentFocusTopic) break;
+      }
+    }
+
+    console.log(`[SkillTree] Filtered to ${branches.length} branches, ${totalTopics} topics for enrolled courses`);
 
     return {
       branches,

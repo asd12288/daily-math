@@ -169,6 +169,11 @@ export function checkAllAnswers(
 }
 
 /**
+ * Result message types for different outcomes
+ */
+export type ResultMessageType = "success" | "good" | "okay" | "needs_work" | "all_skipped";
+
+/**
  * Get a friendly message based on results
  */
 export function getResultMessage(results: WorksheetResults): {
@@ -176,9 +181,32 @@ export function getResultMessage(results: WorksheetResults): {
   titleHe: string;
   message: string;
   messageHe: string;
-  type: "success" | "good" | "okay" | "needs_work";
+  type: ResultMessageType;
 } {
-  const { percentage, correctCount, totalCount } = results;
+  const { percentage, correctCount, skippedCount, totalCount } = results;
+
+  // Handle all-skipped case
+  if (skippedCount === totalCount) {
+    return {
+      title: "Set Completed",
+      titleHe: "הסט הושלם",
+      message: `You skipped all ${totalCount} questions. Try practicing tomorrow!`,
+      messageHe: `דילגת על כל ${totalCount} השאלות. נסה לתרגל מחר!`,
+      type: "all_skipped",
+    };
+  }
+
+  // Handle mostly-skipped case (more than half skipped)
+  if (skippedCount > totalCount / 2) {
+    const attempted = totalCount - skippedCount;
+    return {
+      title: "Practice More!",
+      titleHe: "תרגל יותר!",
+      message: `You only attempted ${attempted} out of ${totalCount} questions. Try to complete more next time!`,
+      messageHe: `ניסית רק ${attempted} מתוך ${totalCount} שאלות. נסה להשלים יותר בפעם הבאה!`,
+      type: "needs_work",
+    };
+  }
 
   if (percentage === 100) {
     return {

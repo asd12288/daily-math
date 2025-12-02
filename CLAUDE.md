@@ -1176,3 +1176,4 @@ Start Practice → Load Daily Set → Display Exercise
 - **Dashboard Layout**: `shared/layout/`
 - **Full System Plan**: `.claude/plans/wiggly-forging-pumpkin.md`
 - "C:\Users\ilanc\Downloads\modernize-tailwind-nextjs-pro_NjhmM2FiODQ4NTU4M2UwMDM4OWRmY2I4\modernize-tailwind-nextjs-pro\modernize-tailwind-nextjs-pro-main\packages\main" this is the path  remmber it now that you know where is it i wnat you to create a new page for the development proccess, i want you to copy compoenents from there and design new compoents made for our app, from courses to the ai and so on so we  can visualize the design before creating the working ones
+- remmber to put math in the math block component

@@ -4,8 +4,13 @@
 import { createAdminClient } from "@/lib/appwrite/server";
 import { ID, Query } from "node-appwrite";
 import { APPWRITE_CONFIG } from "@/lib/appwrite/config";
+import { getUserLocalDate, DEFAULT_TIMEZONE } from "@/lib/utils/timezone";
 import { SkillTreeService } from "@/modules/skill-tree/server/services/skill-tree.service";
-import { UserProfileService } from "@/modules/gamification/server/services/user-profile.service";
+import {
+  UserProfileService,
+  XP_BASE,
+  calculateStreakBonus,
+} from "@/modules/gamification/server/services/user-profile.service";
 import {
   TOPICS,
   getTopicById,
@@ -21,7 +26,7 @@ import type {
   ProblemAttempt,
   DailySetConfig,
 } from "../../types";
-import { DEFAULT_DAILY_SET_CONFIG, XP_REWARDS } from "../../types";
+import { DEFAULT_DAILY_SET_CONFIG, XP_REWARDS, createDailySetConfig } from "../../types";
 import type { Difficulty } from "@/modules/skill-tree/types";
 import type { Exercise } from "@/modules/courses/types";
 import type { Models } from "node-appwrite";
@@ -44,9 +49,27 @@ interface DailySetDocument extends Models.Document {
 export class DailySetService {
   /**
    * Get or create today's daily set for a user
+   * Uses user's timezone to determine "today" (default: Israel time)
    */
   static async getTodaySet(userId: string): Promise<DailySet | null> {
-    const today = new Date().toISOString().split("T")[0];
+    const { databases } = await createAdminClient();
+
+    // Fetch user's timezone from profile
+    let userTimezone = DEFAULT_TIMEZONE;
+    try {
+      const profiles = await databases.listDocuments(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.usersProfile,
+        [Query.equal("userId", userId), Query.limit(1)]
+      );
+      if (profiles.documents.length > 0) {
+        userTimezone = profiles.documents[0].timezone || DEFAULT_TIMEZONE;
+      }
+    } catch {
+      // Use default timezone if fetch fails
+    }
+
+    const today = getUserLocalDate(userTimezone);
 
     // Try to get existing set
     const existing = await this.getDailySetByDate(userId, today);
@@ -91,13 +114,49 @@ export class DailySetService {
   static async generateDailySet(
     userId: string,
     date: string,
-    config: DailySetConfig = DEFAULT_DAILY_SET_CONFIG,
+    config?: DailySetConfig,
     useAI: boolean = true
   ): Promise<DailySet> {
     const { databases } = await createAdminClient();
 
-    // Get user's skill tree state
-    const skillTree = await SkillTreeService.getSkillTreeState(userId);
+    // Fetch user profile for preferences and enrolled courses
+    let effectiveConfig = config;
+    let enrolledCourses: string[] = [];
+
+    try {
+      const profiles = await databases.listDocuments(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.usersProfile,
+        [Query.equal("userId", userId), Query.limit(1)]
+      );
+
+      if (profiles.documents.length > 0) {
+        const profile = profiles.documents[0];
+
+        // Get dailyExerciseCount if no config provided
+        if (!effectiveConfig) {
+          const exerciseCount = profile.dailyExerciseCount || 5;
+          effectiveConfig = createDailySetConfig(exerciseCount);
+        }
+
+        // Parse enrolled courses for hybrid filtering
+        try {
+          enrolledCourses = JSON.parse(profile.enrolledCourses || "[]");
+        } catch {
+          enrolledCourses = [];
+        }
+      } else {
+        effectiveConfig = effectiveConfig || DEFAULT_DAILY_SET_CONFIG;
+      }
+    } catch {
+      effectiveConfig = effectiveConfig || DEFAULT_DAILY_SET_CONFIG;
+    }
+
+    // Get user's skill tree state (filtered by enrolled courses if any)
+    const skillTree = enrolledCourses.length > 0
+      ? await SkillTreeService.getSkillTreeStateForCourses(userId, enrolledCourses)
+      : await SkillTreeService.getSkillTreeState(userId);
+
 
     // Determine focus topic (first in_progress or first not_started)
     let focusTopic = skillTree.branches
@@ -129,20 +188,16 @@ export class DailySetService {
     // Try AI generation first (if enabled and API key available)
     if (useAI && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       try {
-        console.log(`[DailySet] Generating AI problems for user ${userId}, focus: ${focusTopic.id}`);
-        const aiResult = await generateDailyProblems(userId, focusTopic.id, config);
+        const aiResult = await generateDailyProblems(userId, focusTopic.id, effectiveConfig);
         problems = aiResult.problems;
-        console.log(`[DailySet] AI generated ${aiResult.generatedCount} problems (${aiResult.fallbackCount} fallbacks)`);
-      } catch (error) {
-        console.error("[DailySet] AI generation failed, falling back to exercise bank:", error);
+      } catch {
         // Fall through to exercise bank
       }
     }
 
     // Fallback to exercise bank if AI didn't generate problems
     if (problems.length === 0) {
-      console.log("[DailySet] Using exercise bank for problem generation");
-      problems = await this.generateFromExerciseBank(userId, focusTopic.id, config);
+      problems = await this.generateFromExerciseBank(userId, focusTopic.id, effectiveConfig);
     }
 
     // Create daily set document
@@ -159,6 +214,13 @@ export class DailySetService {
       focusTopicId: focusTopic.id,
       focusTopicName: focusTopic.name,
     };
+
+    // Race condition check: verify no set was created while we were generating problems
+    // This prevents duplicate sets from concurrent requests
+    const existingSet = await this.getDailySetByDate(userId, date);
+    if (existingSet) {
+      return existingSet;
+    }
 
     // Save to database
     const doc = await databases.createDocument(
@@ -185,6 +247,7 @@ export class DailySetService {
 
   /**
    * Generate problems from the exercise bank (fallback method)
+   * Uses dynamic slot counts from config
    */
   private static async generateFromExerciseBank(
     userId: string,
@@ -192,47 +255,55 @@ export class DailySetService {
     config: DailySetConfig
   ): Promise<Problem[]> {
     const skillTree = await SkillTreeService.getSkillTreeState(userId);
-    // focusTopic is derived from focusTopicId for slot selection
-
     const usedExerciseIds: string[] = [];
     const problems: Problem[] = [];
 
-    // 1. Review slot
+    // Get topic selections
     const reviewTopic = this.selectReviewTopic(skillTree, config);
     const reviewTopicId = reviewTopic?.id || TOPICS[0].id;
-    const reviewProblem = await this.fetchProblemFromBank(
-      reviewTopicId, "easy", "review", 0, usedExerciseIds
-    );
-    problems.push(reviewProblem);
-    if (reviewProblem.id) usedExerciseIds.push(reviewProblem.id);
-
-    // 2-3. Core slots
-    for (let i = 0; i < 2; i++) {
-      const coreProblem = await this.fetchProblemFromBank(
-        focusTopicId, "medium", "core", problems.length, usedExerciseIds
-      );
-      problems.push(coreProblem);
-      if (coreProblem.id) usedExerciseIds.push(coreProblem.id);
-    }
-
-    // 4. Foundation slot
     const foundationTopic = this.selectFoundationTopic(focusTopicId);
     const foundationTopicId = foundationTopic?.id || TOPICS[0].id;
-    const foundationProblem = await this.fetchProblemFromBank(
-      foundationTopicId, "easy", "foundation", problems.length, usedExerciseIds
-    );
-    problems.push(foundationProblem);
-    if (foundationProblem.id) usedExerciseIds.push(foundationProblem.id);
 
-    // 5. Challenge slot
-    const challengeProblem = await this.fetchProblemFromBank(
-      focusTopicId, "hard", "challenge", problems.length, usedExerciseIds
-    );
-    problems.push(challengeProblem);
-    if (challengeProblem.id) usedExerciseIds.push(challengeProblem.id);
+    // Generate review slots (easy, from mastered topics)
+    for (let i = 0; i < config.slots.review; i++) {
+      const problem = await this.fetchProblemFromBank(
+        reviewTopicId, "easy", "review", problems.length, usedExerciseIds
+      );
+      problems.push(problem);
+      if (problem.id) usedExerciseIds.push(problem.id);
+    }
+
+    // Generate core slots (medium, from focus topic)
+    for (let i = 0; i < config.slots.core; i++) {
+      const problem = await this.fetchProblemFromBank(
+        focusTopicId, "medium", "core", problems.length, usedExerciseIds
+      );
+      problems.push(problem);
+      if (problem.id) usedExerciseIds.push(problem.id);
+    }
+
+    // Generate foundation slots (easy, from prerequisite topics)
+    for (let i = 0; i < config.slots.foundation; i++) {
+      const problem = await this.fetchProblemFromBank(
+        foundationTopicId, "easy", "foundation", problems.length, usedExerciseIds
+      );
+      problems.push(problem);
+      if (problem.id) usedExerciseIds.push(problem.id);
+    }
+
+    // Generate challenge slots (hard, from focus topic)
+    for (let i = 0; i < config.slots.challenge; i++) {
+      const problem = await this.fetchProblemFromBank(
+        focusTopicId, "hard", "challenge", problems.length, usedExerciseIds
+      );
+      problems.push(problem);
+      if (problem.id) usedExerciseIds.push(problem.id);
+    }
 
     // Mark used exercises
-    const bankExerciseIds = usedExerciseIds.filter((id) => !id.startsWith("problem_") && !id.startsWith("placeholder_"));
+    const bankExerciseIds = usedExerciseIds.filter(
+      (id) => !id.startsWith("problem_") && !id.startsWith("placeholder_")
+    );
     if (bankExerciseIds.length > 0) {
       await this.markExercisesUsed(bankExerciseIds);
     }
@@ -258,7 +329,6 @@ export class DailySetService {
     }
 
     // Fallback to placeholder if bank is empty
-    console.warn(`No exercises found in bank for topic ${topicId} (${difficulty}), using placeholder`);
     return this.createProblemPlaceholder(topicId, slot, difficulty, index);
   }
 
@@ -272,7 +342,16 @@ export class DailySetService {
     answerText: string | null,
     answerImageUrl: string | null,
     isSkipped: boolean
-  ): Promise<{ success: boolean; isCorrect: boolean | null; xpEarned: number }> {
+  ): Promise<{
+    success: boolean;
+    isCorrect: boolean | null;
+    xpEarned: number;
+    alreadyAnswered?: boolean;
+    aiFeedback?: string | null;
+    extractedAnswer?: string | null;
+    completionBonus?: number;
+    streakBonus?: number;
+  }> {
     const { databases } = await createAdminClient();
 
     // Get the daily set
@@ -287,34 +366,101 @@ export class DailySetService {
       return { success: false, isCorrect: null, xpEarned: 0 };
     }
 
-    // Determine if answer is correct (simple text comparison for now)
-    // TODO: Add AI verification for image uploads
+    // Check for existing attempt (prevent XP double-counting)
+    try {
+      const existingAttempts = await databases.listDocuments(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.problemAttempts,
+        [
+          Query.equal("userId", userId),
+          Query.equal("dailySetId", dailySetId),
+          Query.equal("problemId", problemId),
+          Query.limit(1),
+        ]
+      );
+
+      if (existingAttempts.documents.length > 0) {
+        const existing = existingAttempts.documents[0];
+        return {
+          success: true,
+          isCorrect: existing.isCorrect as boolean | null,
+          xpEarned: 0, // No duplicate XP
+          alreadyAnswered: true,
+        };
+      }
+    } catch {
+      // Continue with submission if check fails
+    }
+
+    // Determine if answer is correct
     let isCorrect: boolean | null = null;
-    if (!isSkipped && answerText) {
-      isCorrect = this.checkAnswer(answerText, problem.correctAnswer);
+    let aiFeedback: string | null = null;
+    let extractedAnswer: string | null = null;
+
+    // Get user's preferred locale for AI feedback
+    let userLocale: "en" | "he" = "en";
+    try {
+      const profiles = await databases.listDocuments(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.usersProfile,
+        [Query.equal("userId", userId), Query.limit(1)]
+      );
+      if (profiles.documents.length > 0) {
+        const preferredLocale = profiles.documents[0].preferredLocale;
+        if (preferredLocale === "he") {
+          userLocale = "he";
+        }
+      }
+    } catch {
+      // Use default locale if fetch fails
+    }
+
+    if (!isSkipped) {
+      if (answerImageUrl) {
+        // Use AI to analyze handwritten answer from image
+        try {
+          const analysis = await this.analyzeImageAnswer(
+            answerImageUrl,
+            problem.questionText,
+            problem.correctAnswer,
+            userLocale
+          );
+          isCorrect = analysis.isCorrect;
+          aiFeedback = analysis.feedback;
+          extractedAnswer = analysis.extractedAnswer;
+        } catch {
+          // Fall back to null (unknown) if AI fails
+        }
+      } else if (answerText) {
+        // Simple text comparison for manual text answers
+        isCorrect = this.checkAnswer(answerText, problem.correctAnswer);
+      }
     }
 
     // Calculate XP
     const xpEarned = isCorrect ? problem.xpReward : 0;
 
-    // Create attempt record
-    const attempt: Omit<ProblemAttempt, "id"> = {
+    // Create attempt record - use Appwrite field names
+    const attemptData = {
+      sessionId: dailySetId, // Use dailySetId as sessionId for daily sets
       dailySetId: dailySetId,
       problemId,
       userId,
-      answerMethod: isSkipped ? "skipped" : answerImageUrl ? "image" : "text",
-      answerText: answerText || undefined,
-      answerImageUrl: answerImageUrl || undefined,
+      answerType: isSkipped ? "skipped" : answerImageUrl ? "image" : "text",
+      answerText: answerText || extractedAnswer || null, // Store extracted answer if from image
+      answerImageUrl: answerImageUrl || null,
       isCorrect,
+      aiFeedback: aiFeedback || null,
       startedAt: new Date().toISOString(),
       submittedAt: new Date().toISOString(),
+      xpEarned: isCorrect ? problem.xpReward : 0,
     };
 
     await databases.createDocument(
       APPWRITE_CONFIG.databaseId,
       APPWRITE_CONFIG.collections.problemAttempts,
       ID.unique(),
-      attempt
+      attemptData
     );
 
     // Update daily set progress
@@ -342,17 +488,58 @@ export class DailySetService {
       await SkillTreeService.updateProgress(userId, problem.topicId, isCorrect);
     }
 
-    // Sync XP to user profile
+    // Track total XP earned (question + bonuses)
+    let totalXpEarned = xpEarned;
+
+    // Sync question XP to user profile
     if (xpEarned > 0) {
       await UserProfileService.syncUserXp(userId, xpEarned);
     }
 
-    // Update streak when daily set is completed
+    // Handle daily set completion bonuses
+    let completionBonus = 0;
+    let streakBonus = 0;
+
     if (isSetCompleted) {
-      await UserProfileService.updateStreak(userId);
+      // Update streak and get the new count
+      const streakResult = await UserProfileService.updateStreak(userId);
+
+      if (streakResult.success) {
+        // Calculate and award streak bonus XP (5 XP per day in streak, max 50)
+        streakBonus = calculateStreakBonus(streakResult.currentStreak);
+
+        // Daily set completion bonus (25 XP)
+        completionBonus = XP_BASE.dailySetComplete;
+
+        // Add bonuses to user XP
+        const bonusXp = completionBonus + streakBonus;
+        if (bonusXp > 0) {
+          await UserProfileService.syncUserXp(userId, bonusXp);
+          totalXpEarned += bonusXp;
+
+          // Update the daily set with the total XP including bonuses
+          await databases.updateDocument(
+            APPWRITE_CONFIG.databaseId,
+            APPWRITE_CONFIG.collections.dailySets,
+            dailySetId,
+            {
+              xpEarned: dailySet.xpEarned + xpEarned + bonusXp,
+            }
+          );
+        }
+
+      }
     }
 
-    return { success: true, isCorrect, xpEarned };
+    return {
+      success: true,
+      isCorrect,
+      xpEarned: totalXpEarned,
+      aiFeedback,
+      extractedAnswer,
+      completionBonus: isSetCompleted ? completionBonus : undefined,
+      streakBonus: isSetCompleted ? streakBonus : undefined,
+    };
   }
 
   /**
@@ -498,8 +685,7 @@ export class DailySetService {
           estimatedMinutes: aiQuestion.estimatedMinutes,
           xpReward: XP_REWARDS[difficulty],
         };
-      } catch (error) {
-        console.error("AI question generation failed, using placeholder:", error);
+      } catch {
         // Fall through to placeholder generation
       }
     }
@@ -688,8 +874,7 @@ export class DailySetService {
         .slice(0, limit);
 
       return filtered as unknown as Exercise[];
-    } catch (error) {
-      console.warn("Failed to fetch exercises from bank:", error);
+    } catch {
       return [];
     }
   }
@@ -753,8 +938,8 @@ export class DailySetService {
           }
         })
       );
-    } catch (error) {
-      console.warn("Failed to mark exercises as used:", error);
+    } catch {
+      // Ignore failures
     }
   }
 
@@ -793,8 +978,7 @@ export class DailySetService {
         feedback: analysis.feedback,
         extractedAnswer: analysis.extractedAnswer,
       };
-    } catch (error) {
-      console.error("Image analysis failed:", error);
+    } catch {
       return {
         isCorrect: null,
         feedback: "Could not analyze image. Please try again or enter your answer manually.",

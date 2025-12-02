@@ -221,6 +221,52 @@ body {
   margin: var(--space-4) 0;
 }
 
+/* Math equation container - always LTR */
+.math-equation {
+  direction: ltr !important;
+  unicode-bidi: isolate;
+}
+
+.math-equation .katex {
+  font-size: 1.15em;
+}
+
+/* Solution step styles */
+.solution-step {
+  position: relative;
+}
+
+.solution-step + .solution-step {
+  padding-top: var(--space-4);
+}
+
+/* Question content with proper RTL math handling */
+.question-content {
+  line-height: 1.8;
+}
+
+.question-content .katex {
+  font-size: 1.2em;
+}
+
+/* Large math in question cards */
+.katex-display {
+  margin: 0.5em 0;
+}
+
+/* Make math more readable */
+.katex .mord,
+.katex .mop {
+  font-weight: 400;
+}
+
+/* Ensure math blocks are always LTR even in RTL context */
+[dir="rtl"] .katex-display,
+[dir="rtl"] .katex {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
 /* XP/Level badge animations */
 @keyframes pulse-glow {
   0%, 100% {

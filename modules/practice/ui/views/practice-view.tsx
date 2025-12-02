@@ -9,8 +9,9 @@ import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { Card, CardContent, Button } from "@/shared/ui";
 import { WorksheetView, WorksheetResults } from "../components";
-import { useTodaySet, useSubmitAnswer } from "../../hooks/use-practice";
+import { useTodaySet, useSubmitAnswer, useUploadAnswerImage } from "../../hooks/use-practice";
 import { trpc } from "@/trpc/client";
+import { useGamification } from "@/modules/gamification/ui/context/GamificationContext";
 import type { WorksheetResults as WorksheetResultsType } from "../../lib/check-answers";
 
 type ViewMode = "loading" | "worksheet" | "submitting" | "results";
@@ -23,9 +24,13 @@ export function PracticeView() {
   // Fetch daily set from backend
   const { dailySet, isLoading, error, refetch } = useTodaySet();
   const { submitAnswerAsync } = useSubmitAnswer();
+  const { uploadImageAsync, isUploading } = useUploadAnswerImage();
 
   // Fetch user profile for streak display
   const { data: userProfile } = trpc.dashboard.getUserProfile.useQuery();
+
+  // Gamification toasts
+  const { showXpToast, showDailyComplete } = useGamification();
 
   const [viewMode, setViewMode] = useState<ViewMode>("loading");
   const [results, setResults] = useState<WorksheetResultsType | null>(null);
@@ -84,7 +89,36 @@ export function PracticeView() {
 
     let totalXpEarned = 0;
 
+    // Upload handwork image if provided
+    let uploadedImageUrl: string | null = null;
+    if (handworkImage) {
+      try {
+        // Convert file to base64
+        const reader = new FileReader();
+        const base64Data = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(handworkImage);
+        });
+
+        const uploadResult = await uploadImageAsync({
+          base64Data,
+          fileName: handworkImage.name,
+          mimeType: handworkImage.type,
+        });
+
+        if (uploadResult.success && uploadResult.fileUrl) {
+          uploadedImageUrl = uploadResult.fileUrl;
+        }
+      } catch {
+        // Silently handle upload error - user can still submit without image
+      }
+    }
+
     // Submit each answer to the backend
+    let completionBonus = 0;
+    let streakBonus = 0;
+
     for (let i = 0; i < worksheetResults.results.length; i++) {
       const result = worksheetResults.results[i];
       setSubmitProgress({ current: i + 1, total: worksheetResults.results.length });
@@ -94,16 +128,34 @@ export function PracticeView() {
           dailySetId: dailySet.id,
           problemId: result.problemId,
           answerText: result.userAnswer || null,
-          answerImageUrl: null, // TODO: Handle image upload to storage
+          // Use the uploaded image URL for the first non-skipped answer (worksheet mode shares one image)
+          answerImageUrl: (!result.isSkipped && i === worksheetResults.results.findIndex(r => !r.isSkipped) && uploadedImageUrl)
+            ? uploadedImageUrl
+            : null,
           isSkipped: result.isSkipped,
         });
 
         if (response.xpEarned) {
           totalXpEarned += response.xpEarned;
         }
-      } catch (err) {
-        console.error(`Failed to submit answer for problem ${result.problemId}:`, err);
+
+        // Track bonuses from set completion (only comes with last answer)
+        if (response.completionBonus) {
+          completionBonus = response.completionBonus;
+        }
+        if (response.streakBonus) {
+          streakBonus = response.streakBonus;
+        }
+      } catch {
+        // Continue with next answer even if one fails
       }
+    }
+
+    // Show XP toast if any XP was earned
+    if (totalXpEarned > 0) {
+      // Show daily completion toast with bonuses
+      const questionXp = totalXpEarned - completionBonus - streakBonus;
+      showDailyComplete(questionXp, completionBonus + streakBonus);
     }
 
     // Update results with actual XP earned from backend
@@ -232,7 +284,7 @@ export function PracticeView() {
     );
   }
 
-  // Results view
+  // Results view (with local results from just-submitted session)
   if (viewMode === "results" && results) {
     return (
       <div className="max-w-3xl mx-auto">
@@ -242,6 +294,38 @@ export function PracticeView() {
           onPracticeAgain={handlePracticeAgain}
           onBackToDashboard={handleBackToDashboard}
         />
+      </div>
+    );
+  }
+
+  // Already completed state (returning to a completed daily set)
+  if (dailySet.isCompleted) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <Card className="border-success-200 dark:border-success-800">
+          <CardContent className="py-12 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-success-100 dark:bg-success-900/30 flex items-center justify-center">
+              <Icon icon="tabler:check" height={32} className="text-success-500" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              {t("practice.alreadyCompleted")}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-2">
+              {t("practice.comeBackTomorrow")}
+            </p>
+            <p className="text-success-600 dark:text-success-400 font-semibold mb-6">
+              {t("history.xpEarned", { xp: dailySet.xpEarned })}
+            </p>
+            <div className="flex gap-3 justify-center">
+              <Button variant="outline" onClick={() => router.push("/history")}>
+                {t("practice.viewHistory")}
+              </Button>
+              <Button variant="primary" onClick={handleBackToDashboard}>
+                {t("practice.backToDashboard")}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }

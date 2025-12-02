@@ -9,6 +9,8 @@ import { coursesRouter } from "@/modules/courses/server/procedures";
 import { settingsRouter } from "@/modules/settings/server/procedures";
 import { adminRouter } from "@/modules/admin/server/procedures";
 import { gamificationRouter } from "@/modules/gamification/server/procedures";
+import { homeworkRouter } from "@/modules/homework/server/procedures";
+import { topicsRouter } from "@/modules/topics/server/procedures";
 
 export const appRouter = createTRPCRouter({
   auth: authRouter,
@@ -21,6 +23,8 @@ export const appRouter = createTRPCRouter({
   settings: settingsRouter,
   admin: adminRouter,
   gamification: gamificationRouter,
+  homework: homeworkRouter,
+  topics: topicsRouter,
 });
 
 // Export type definition of API

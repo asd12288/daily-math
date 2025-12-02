@@ -11,7 +11,17 @@ interface MathDisplayProps {
   block?: boolean;
   /** Additional CSS classes */
   className?: string;
+  /** Size variant for math display */
+  size?: "sm" | "md" | "lg" | "xl";
 }
+
+/** Size classes for KaTeX rendering */
+const SIZE_CLASSES = {
+  sm: "text-sm [&_.katex]:text-base",
+  md: "text-base [&_.katex]:text-lg",
+  lg: "text-lg [&_.katex]:text-xl",
+  xl: "text-xl [&_.katex]:text-3xl",
+};
 
 interface ParsedPart {
   type: "text" | "inline-math" | "block-math";
@@ -139,8 +149,9 @@ function parseInlineMath(text: string | undefined | null): ParsedPart[] {
  * <MathDisplay content="Find $f'(x)$ where $f(x) = x^3$" />
  * <MathDisplay content="$$\frac{d}{dx}(x^n) = nx^{n-1}$$" block />
  */
-export function MathDisplay({ content, block = false, className }: MathDisplayProps) {
+export function MathDisplay({ content, block = false, className, size = "md" }: MathDisplayProps) {
   const parts = useMemo(() => parseMathContent(content), [content]);
+  const sizeClass = SIZE_CLASSES[size];
 
   // Handle empty content
   if (!content) {
@@ -151,7 +162,7 @@ export function MathDisplay({ content, block = false, className }: MathDisplayPr
   if (block) {
     const mathContent = content.replace(/^\$\$|\$\$$/g, "").replace(/^\$|\$$/g, "").trim();
     return (
-      <div className={className}>
+      <div className={`${sizeClass} ${className || ""}`}>
         <BlockMath math={mathContent} errorColor="#ef4444" />
       </div>
     );
@@ -162,7 +173,7 @@ export function MathDisplay({ content, block = false, className }: MathDisplayPr
 
   if (hasBlockMath) {
     return (
-      <div className={className}>
+      <div className={`${sizeClass} ${className || ""}`}>
         {parts.map((part, index) => {
           if (part.type === "block-math") {
             return (
@@ -182,7 +193,7 @@ export function MathDisplay({ content, block = false, className }: MathDisplayPr
 
   // Only inline math or text
   return (
-    <span className={className}>
+    <span className={`${sizeClass} ${className || ""}`}>
       {parts.map((part, index) => {
         if (part.type === "inline-math") {
           return <InlineMath key={index} math={part.content} errorColor="#ef4444" />;
@@ -214,5 +225,102 @@ export function MathInline({ content, className }: { content: string; className?
     <span className={className}>
       <InlineMath math={mathContent} errorColor="#ef4444" />
     </span>
+  );
+}
+
+/**
+ * MathEquation - RTL-aware centered math equation display
+ *
+ * Always renders math LTR (as math should be) and centers it.
+ * Ideal for displaying equations in RTL contexts like Hebrew.
+ */
+export function MathEquation({
+  content,
+  className,
+  size = "lg"
+}: {
+  content: string;
+  className?: string;
+  size?: "sm" | "md" | "lg" | "xl";
+}) {
+  const mathContent = content
+    .replace(/^\$\$|\$\$$/g, "")
+    .replace(/^\$|\$$/g, "")
+    .trim();
+
+  const sizeClass = SIZE_CLASSES[size];
+
+  return (
+    <div
+      dir="ltr"
+      className={`math-equation py-4 px-6 flex justify-center overflow-x-auto ${sizeClass} ${className || ""}`}
+    >
+      <BlockMath math={mathContent} errorColor="#ef4444" />
+    </div>
+  );
+}
+
+/**
+ * SolutionStep - Component for displaying a solution step with RTL-aware math
+ *
+ * Separates the explanation (RTL) from the math (LTR) for better readability.
+ */
+interface SolutionStepProps {
+  stepNumber: number;
+  title?: string;
+  math?: string;
+  explanation?: string;
+  isExpanded?: boolean;
+  onToggle?: () => void;
+}
+
+export function SolutionStep({
+  stepNumber,
+  title,
+  math,
+  explanation,
+  isExpanded = true,
+  onToggle
+}: SolutionStepProps) {
+  return (
+    <div className="solution-step group">
+      {/* Step header */}
+      <div
+        className={`flex items-start gap-3 ${onToggle ? 'cursor-pointer' : ''}`}
+        onClick={onToggle}
+      >
+        {/* Step number */}
+        <div className="flex-shrink-0 w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mt-0.5">
+          <span className="text-sm font-semibold text-primary-700 dark:text-primary-400">
+            {stepNumber}
+          </span>
+        </div>
+
+        {/* Step title/description */}
+        <div className="flex-1 min-w-0">
+          {title && (
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 leading-relaxed">
+              {title}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Math equation (always LTR, centered) */}
+      {isExpanded && math && (
+        <div className="mt-3 ms-10">
+          <MathEquation content={math} size="md" />
+        </div>
+      )}
+
+      {/* Explanation (optional, follows locale direction) */}
+      {isExpanded && explanation && (
+        <div className="mt-2 ms-10">
+          <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+            {explanation}
+          </p>
+        </div>
+      )}
+    </div>
   );
 }

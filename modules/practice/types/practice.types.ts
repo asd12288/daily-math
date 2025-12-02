@@ -163,6 +163,54 @@ export const DEFAULT_DAILY_SET_CONFIG: DailySetConfig = {
 };
 
 /**
+ * Calculate slot distribution based on user's daily exercise count (1-10)
+ * Returns the number of problems for each slot type
+ */
+export function calculateSlotDistribution(exerciseCount: number): DailySetConfig["slots"] {
+  // Clamp between 1-10
+  const count = Math.max(1, Math.min(10, exerciseCount));
+
+  switch (count) {
+    case 1:
+      return { review: 0, core: 1, foundation: 0, challenge: 0 };
+    case 2:
+      return { review: 0, core: 1, foundation: 0, challenge: 1 };
+    case 3:
+      return { review: 1, core: 1, foundation: 0, challenge: 1 };
+    case 4:
+      return { review: 1, core: 1, foundation: 1, challenge: 1 };
+    case 5:
+      return { review: 1, core: 2, foundation: 1, challenge: 1 }; // default
+    case 6:
+      return { review: 1, core: 3, foundation: 1, challenge: 1 };
+    case 7:
+      return { review: 1, core: 3, foundation: 2, challenge: 1 };
+    case 8:
+      return { review: 2, core: 3, foundation: 2, challenge: 1 };
+    case 9:
+      return { review: 2, core: 4, foundation: 2, challenge: 1 };
+    case 10:
+      return { review: 2, core: 4, foundation: 2, challenge: 2 };
+    default:
+      return { review: 1, core: 2, foundation: 1, challenge: 1 };
+  }
+}
+
+/**
+ * Create a DailySetConfig based on user's exercise count preference
+ */
+export function createDailySetConfig(exerciseCount: number): DailySetConfig {
+  const slots = calculateSlotDistribution(exerciseCount);
+  const totalProblems = slots.review + slots.core + slots.foundation + slots.challenge;
+
+  return {
+    totalProblems,
+    reviewDaysThreshold: 3,
+    slots,
+  };
+}
+
+/**
  * XP rewards per difficulty
  */
 export const XP_REWARDS: Record<Difficulty, number> = {

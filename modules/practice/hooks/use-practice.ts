@@ -107,6 +107,26 @@ export function useAttempts(dailySetId: string | undefined) {
   };
 }
 
+/**
+ * Hook to get user's daily set history (past completed sets)
+ */
+export function usePastDailySets(limit: number = 20) {
+  const query = trpc.practice.getPastDailySets.useQuery(
+    { limit },
+    {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnWindowFocus: true,
+    }
+  );
+
+  return {
+    dailySets: query.data || [],
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+  };
+}
+
 // ========== Topic Practice Hooks ==========
 
 /**
@@ -301,5 +321,41 @@ export function useTriggerReminderEmail() {
     isTriggering: mutation.isPending,
     error: mutation.error,
     result: mutation.data,
+  };
+}
+
+// ========== Image Upload & AI Analysis Hooks ==========
+
+/**
+ * Hook to upload an answer image to storage
+ * Returns the file URL for use in answer submission
+ */
+export function useUploadAnswerImage() {
+  const mutation = trpc.practice.uploadAnswerImage.useMutation();
+
+  return {
+    uploadImage: mutation.mutate,
+    uploadImageAsync: mutation.mutateAsync,
+    isUploading: mutation.isPending,
+    error: mutation.error,
+    result: mutation.data,
+    reset: mutation.reset,
+  };
+}
+
+/**
+ * Hook to analyze an uploaded image using AI
+ * Can be used for instant feedback before full submission
+ */
+export function useAnalyzeAnswerImage() {
+  const mutation = trpc.practice.analyzeAnswerImage.useMutation();
+
+  return {
+    analyzeImage: mutation.mutate,
+    analyzeImageAsync: mutation.mutateAsync,
+    isAnalyzing: mutation.isPending,
+    error: mutation.error,
+    analysis: mutation.data,
+    reset: mutation.reset,
   };
 }

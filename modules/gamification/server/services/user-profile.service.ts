@@ -4,6 +4,13 @@
 import { createAdminClient } from "@/lib/appwrite/server";
 import { Query } from "node-appwrite";
 import { APPWRITE_CONFIG } from "@/lib/appwrite/config";
+import {
+  getUserLocalDate,
+  getDateInTimezone,
+  isConsecutiveDay,
+  isSameDay,
+  DEFAULT_TIMEZONE,
+} from "@/lib/utils/timezone";
 
 /**
  * XP thresholds for each level (1-10)
@@ -83,7 +90,6 @@ export class UserProfileService {
       );
 
       if (profiles.documents.length === 0) {
-        console.error(`[UserProfile] Profile not found for user ${userId}`);
         return { success: false, newTotalXp: 0, newLevel: 1, leveledUp: false };
       }
 
@@ -106,22 +112,15 @@ export class UserProfileService {
         }
       );
 
-      console.log(`[UserProfile] Updated XP for user ${userId}: +${xpToAdd} XP (total: ${newTotalXp}, level: ${newLevel})`);
-
-      if (leveledUp) {
-        console.log(`[UserProfile] User ${userId} leveled up to level ${newLevel}!`);
-      }
-
       return { success: true, newTotalXp, newLevel, leveledUp };
-    } catch (error) {
-      console.error(`[UserProfile] Failed to sync XP for user ${userId}:`, error);
+    } catch {
       return { success: false, newTotalXp: 0, newLevel: 1, leveledUp: false };
     }
   }
 
   /**
    * Update streak after completing practice
-   * Returns updated streak count and whether it continued or reset
+   * Uses user's timezone for accurate day calculation (default: Israel time)
    */
   static async updateStreak(userId: string): Promise<{
     success: boolean;
@@ -142,18 +141,22 @@ export class UserProfileService {
       );
 
       if (profiles.documents.length === 0) {
-        console.error(`[UserProfile] Profile not found for user ${userId}`);
         return { success: false, currentStreak: 0, streakContinued: false };
       }
 
       const profile = profiles.documents[0];
-      const lastPracticeDate = profile.lastPracticeDate
-        ? new Date(profile.lastPracticeDate).toISOString().split("T")[0]
-        : null;
-      const today = new Date().toISOString().split("T")[0];
 
-      // If already practiced today, don't update
-      if (lastPracticeDate === today) {
+      // Use user's timezone (default to Israel if not set)
+      const userTimezone = profile.timezone || DEFAULT_TIMEZONE;
+      const today = getUserLocalDate(userTimezone);
+
+      // Get last practice date in user's timezone
+      const lastPracticeDate = profile.lastPracticeDate
+        ? getDateInTimezone(new Date(profile.lastPracticeDate), userTimezone)
+        : null;
+
+      // If already practiced today (in user's timezone), don't update
+      if (lastPracticeDate && isSameDay(lastPracticeDate, today)) {
         return {
           success: true,
           currentStreak: profile.currentStreak || 0,
@@ -169,22 +172,14 @@ export class UserProfileService {
         // First time practicing
         newStreak = 1;
         streakContinued = true;
+      } else if (isConsecutiveDay(lastPracticeDate, today)) {
+        // Consecutive day - continue streak
+        newStreak = (profile.currentStreak || 0) + 1;
+        streakContinued = true;
       } else {
-        const lastDate = new Date(lastPracticeDate);
-        const todayDate = new Date(today);
-        const diffTime = todayDate.getTime() - lastDate.getTime();
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays === 1) {
-          // Consecutive day - continue streak
-          newStreak = (profile.currentStreak || 0) + 1;
-          streakContinued = true;
-        } else {
-          // Missed a day - reset streak
-          newStreak = 1;
-          streakContinued = false;
-          console.log(`[UserProfile] Streak reset for user ${userId} (missed ${diffDays - 1} days)`);
-        }
+        // Missed a day - reset streak (hard reset)
+        newStreak = 1;
+        streakContinued = false;
       }
 
       // Check if this is a new longest streak
@@ -203,11 +198,8 @@ export class UserProfileService {
         }
       );
 
-      console.log(`[UserProfile] Updated streak for user ${userId}: ${newStreak} days (longest: ${newLongestStreak})`);
-
       return { success: true, currentStreak: newStreak, streakContinued };
-    } catch (error) {
-      console.error(`[UserProfile] Failed to update streak for user ${userId}:`, error);
+    } catch {
       return { success: false, currentStreak: 0, streakContinued: false };
     }
   }
@@ -266,8 +258,7 @@ export class UserProfileService {
         xpToNextLevel: Math.max(0, xpToNextLevel),
         progressToNextLevel: Math.min(100, Math.max(0, progressToNextLevel)),
       };
-    } catch (error) {
-      console.error(`[UserProfile] Failed to get stats for user ${userId}:`, error);
+    } catch {
       return null;
     }
   }
