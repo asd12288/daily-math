@@ -4,7 +4,7 @@
 
 import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
-import { Client, Databases, ID, Query } from "node-appwrite";
+import { Client, Databases, Query } from "node-appwrite";
 import { TOPICS, BRANCHES } from "../modules/skill-tree/config/topics";
 
 const client = new Client()

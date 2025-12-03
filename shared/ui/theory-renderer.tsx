@@ -114,13 +114,21 @@ export function TheoryRenderer({ content, className }: TheoryRendererProps) {
     let bulletGroup: ParsedLine[] = [];
     let numberedGroup: ParsedLine[] = [];
 
+    // Helper to render list item content - handles block math gracefully
+    const renderListItemContent = (content: string) => {
+      if (content.includes("$$")) {
+        return <MathDisplay content={content} />;
+      }
+      return processInlineMarkdown(content);
+    };
+
     const flushBullets = () => {
       if (bulletGroup.length > 0) {
         result.push(
           <ul key={result.length} className="list-disc list-inside space-y-2 my-3 ms-4">
             {bulletGroup.map((item, idx) => (
               <li key={idx} className="text-gray-700 dark:text-gray-300">
-                {processInlineMarkdown(item.content)}
+                {renderListItemContent(item.content)}
               </li>
             ))}
           </ul>
@@ -135,7 +143,7 @@ export function TheoryRenderer({ content, className }: TheoryRendererProps) {
           <ol key={result.length} className="list-decimal list-inside space-y-2 my-3 ms-4">
             {numberedGroup.map((item, idx) => (
               <li key={idx} className="text-gray-700 dark:text-gray-300">
-                {processInlineMarkdown(item.content)}
+                {renderListItemContent(item.content)}
               </li>
             ))}
           </ol>
@@ -161,37 +169,76 @@ export function TheoryRenderer({ content, className }: TheoryRendererProps) {
         flushNumbered();
       }
 
+      // Helper to check if content has block math
+      const hasBlockMath = (text: string) => text.includes("$$");
+
       switch (parsed.type) {
         case "h2":
-          result.push(
-            <h2 key={result.length} className="text-xl font-bold text-gray-900 dark:text-white mt-6 mb-3 first:mt-0">
-              {processInlineMarkdown(parsed.content)}
-            </h2>
-          );
+          // Headers shouldn't contain block math, but handle gracefully if they do
+          if (hasBlockMath(parsed.content)) {
+            result.push(
+              <div key={result.length} className="text-xl font-bold text-gray-900 dark:text-white mt-6 mb-3 first:mt-0" role="heading" aria-level={2}>
+                <MathDisplay content={parsed.content} />
+              </div>
+            );
+          } else {
+            result.push(
+              <h2 key={result.length} className="text-xl font-bold text-gray-900 dark:text-white mt-6 mb-3 first:mt-0">
+                {processInlineMarkdown(parsed.content)}
+              </h2>
+            );
+          }
           break;
 
         case "h3":
-          result.push(
-            <h3 key={result.length} className="text-lg font-semibold text-gray-800 dark:text-gray-100 mt-5 mb-2">
-              {processInlineMarkdown(parsed.content)}
-            </h3>
-          );
+          if (hasBlockMath(parsed.content)) {
+            result.push(
+              <div key={result.length} className="text-lg font-semibold text-gray-800 dark:text-gray-100 mt-5 mb-2" role="heading" aria-level={3}>
+                <MathDisplay content={parsed.content} />
+              </div>
+            );
+          } else {
+            result.push(
+              <h3 key={result.length} className="text-lg font-semibold text-gray-800 dark:text-gray-100 mt-5 mb-2">
+                {processInlineMarkdown(parsed.content)}
+              </h3>
+            );
+          }
           break;
 
         case "h4":
-          result.push(
-            <h4 key={result.length} className="text-base font-medium text-gray-700 dark:text-gray-200 mt-4 mb-2">
-              {processInlineMarkdown(parsed.content)}
-            </h4>
-          );
+          if (hasBlockMath(parsed.content)) {
+            result.push(
+              <div key={result.length} className="text-base font-medium text-gray-700 dark:text-gray-200 mt-4 mb-2" role="heading" aria-level={4}>
+                <MathDisplay content={parsed.content} />
+              </div>
+            );
+          } else {
+            result.push(
+              <h4 key={result.length} className="text-base font-medium text-gray-700 dark:text-gray-200 mt-4 mb-2">
+                {processInlineMarkdown(parsed.content)}
+              </h4>
+            );
+          }
           break;
 
         case "paragraph":
-          result.push(
-            <p key={result.length} className="text-gray-700 dark:text-gray-300 my-2 leading-relaxed">
-              {processInlineMarkdown(parsed.content)}
-            </p>
-          );
+          // Check if content contains block math ($$...$$)
+          // If so, use <div> instead of <p> to avoid hydration errors
+          // (BlockMath renders as <div> which can't be inside <p>)
+          if (parsed.content.includes("$$")) {
+            result.push(
+              <div key={result.length} className="text-gray-700 dark:text-gray-300 my-2 leading-relaxed">
+                <MathDisplay content={parsed.content} />
+              </div>
+            );
+          } else {
+            result.push(
+              <p key={result.length} className="text-gray-700 dark:text-gray-300 my-2 leading-relaxed">
+                {processInlineMarkdown(parsed.content)}
+              </p>
+            );
+          }
           break;
 
         case "empty":

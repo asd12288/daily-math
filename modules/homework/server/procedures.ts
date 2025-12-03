@@ -1,5 +1,6 @@
 // modules/homework/server/procedures.ts
 // tRPC router for homework feature
+// SIMPLIFIED: Synchronous processing (no fire-and-forget, no webhook)
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
@@ -8,18 +9,7 @@ import { APPWRITE_CONFIG } from "@/lib/appwrite/config";
 import { ID } from "node-appwrite";
 import { HomeworkService } from "./services/homework.service";
 import { PdfProcessingService } from "./services/pdf-processing.service";
-
-/**
- * Get the base URL for API calls
- * Uses NGROK_URL for local development, NEXT_PUBLIC_APP_URL for production
- */
-function getBaseUrl(): string {
-  return (
-    process.env.NGROK_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    "http://localhost:3000"
-  );
-}
+import { shouldGenerateTitle, generateHomeworkTitle } from "./services/title-generation.service";
 import {
   uploadHomeworkSchema,
   getHomeworkByIdSchema,
@@ -29,7 +19,7 @@ import {
   retryProcessingSchema,
   getStatusSchema,
 } from "../lib/validation";
-import { MAX_FILE_SIZE, MAX_PAGES, getMimeTypeFromExtension } from "../config/constants";
+import { MAX_FILE_SIZE, MAX_PAGES } from "../config/constants";
 import type { HomeworkFileType } from "../types/homework.types";
 
 /**
@@ -54,13 +44,15 @@ export const homeworkRouter = createTRPCRouter({
   list: protectedProcedure
     .input(listHomeworksSchema)
     .query(async ({ ctx, input }) => {
-      const { limit, offset, status } = input;
+      const { limit, offset, status, subject, dateRange } = input;
 
       const result = await HomeworkService.listHomeworks({
         userId: ctx.session.userId,
         limit,
         offset,
         status,
+        subject,
+        dateRange,
       });
 
       return result;
@@ -180,54 +172,69 @@ export const homeworkRouter = createTRPCRouter({
         fileType,
       });
 
-      // Fire-and-forget: trigger processing API
-      // This allows the request to return immediately while processing happens in background
+      // Synchronous processing - await the result directly
       const generateIllustrations = input.generateIllustrations ?? false;
-      const baseUrl = getBaseUrl();
 
-      console.log("[Homework] Triggering processing:", {
-        url: `${baseUrl}/api/process-homework`,
+      console.log("[Homework] Starting synchronous processing:", {
         homeworkId: homework.$id,
-        hasSecret: !!process.env.INTERNAL_API_SECRET,
-        secretPreview: process.env.INTERNAL_API_SECRET?.substring(0, 10) + "...",
+        generateIllustrations,
       });
 
-      fetch(`${baseUrl}/api/process-homework`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-internal-secret": process.env.INTERNAL_API_SECRET || "",
-        },
-        body: JSON.stringify({
-          homeworkId: homework.$id,
-          userId: ctx.session.userId,
-          generateIllustrations,
-        }),
-      })
-        .then(async (res) => {
-          if (!res.ok) {
-            const text = await res.text();
-            console.error("[Homework] Processing API error:", res.status, text);
-            await HomeworkService.updateHomeworkStatus(homework.$id, "failed", {
-              errorMessage: `Processing API returned ${res.status}: ${text.substring(0, 100)}`,
-            });
-          } else {
-            console.log("[Homework] Processing API called successfully");
-          }
-        })
-        .catch((err) => {
-          console.error("[Homework] Failed to trigger processing:", err);
-          // Mark as failed if we can't even start processing
-          HomeworkService.updateHomeworkStatus(homework.$id, "failed", {
-            errorMessage: "Failed to start processing: " + err.message,
+      try {
+        const result = await PdfProcessingService.processHomework(
+          homework.$id,
+          ctx.session.userId,
+          generateIllustrations
+        );
+
+        if (!result.success) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: result.error || "Processing failed",
           });
+        }
+
+        // Generate AI title for generic filenames (non-blocking, fire-and-forget)
+        if (shouldGenerateTitle(homeworkTitle, fileName) && result.questionCount > 0) {
+          // Fetch questions for title generation
+          HomeworkService.getHomeworkWithQuestions(homework.$id)
+            .then(async (hw) => {
+              if (hw && hw.questions.length > 0) {
+                const titleResult = await generateHomeworkTitle(
+                  hw.questions.map((q) => ({
+                    questionText: q.questionText,
+                    detectedSubject: q.detectedSubject,
+                    detectedTopic: q.detectedTopic,
+                  }))
+                );
+                if (titleResult?.title) {
+                  await HomeworkService.updateHomeworkTitle(homework.$id, titleResult.title);
+                }
+              }
+            })
+            .catch((err) => {
+              console.error("[Homework] Title generation failed (non-critical):", err);
+            });
+        }
+
+        return {
+          homeworkId: homework.$id,
+          status: "completed",
+          questionCount: result.questionCount,
+        };
+      } catch (error) {
+        console.error("[Homework] Processing failed:", error);
+
+        // Update status to failed
+        await HomeworkService.updateHomeworkStatus(homework.$id, "failed", {
+          errorMessage: error instanceof Error ? error.message : "Processing failed",
         });
 
-      return {
-        homeworkId: homework.$id,
-        status: "pending",
-        message: "Upload successful. Processing will begin shortly.",
-      };
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: error instanceof Error ? error.message : "Processing failed",
+        });
+      }
     }),
 
   /**

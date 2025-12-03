@@ -22,6 +22,8 @@ import type {
   ClassifiedQuestion,
   QuestionClassification,
   AISuggestions,
+  HomeworkDateRange,
+  HomeworkFilterCounts,
 } from "../../types";
 import { UserProfileService } from "@/modules/gamification/server/services/user-profile.service";
 import { AdaptiveSolvingService } from "./adaptive-solving.service";
@@ -95,6 +97,25 @@ export class HomeworkService {
       }
     );
 
+  }
+
+  /**
+   * Update homework title (used by AI title generation)
+   */
+  static async updateHomeworkTitle(
+    homeworkId: string,
+    title: string
+  ): Promise<void> {
+    const { databases } = await createAdminClient();
+
+    await databases.updateDocument(
+      APPWRITE_CONFIG.databaseId,
+      APPWRITE_CONFIG.collections.homeworks,
+      homeworkId,
+      { title }
+    );
+
+    console.log(`[HomeworkService] Updated title for ${homeworkId}: ${title}`);
   }
 
   /**
@@ -214,35 +235,173 @@ export class HomeworkService {
   }
 
   /**
-   * List homeworks for a user
+   * Get the date range filter start date
+   */
+  private static getDateRangeStart(dateRange: HomeworkDateRange): Date | null {
+    if (dateRange === "all") return null;
+
+    const now = new Date();
+    switch (dateRange) {
+      case "today":
+        return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      case "week":
+        const weekAgo = new Date(now);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return weekAgo;
+      case "month":
+        const monthAgo = new Date(now);
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        return monthAgo;
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * Get primary subject from a list of questions (most common subject)
+   */
+  private static getPrimarySubject(subjects: string[]): string | undefined {
+    if (subjects.length === 0) return undefined;
+
+    const counts: Record<string, number> = {};
+    for (const subject of subjects) {
+      counts[subject] = (counts[subject] || 0) + 1;
+    }
+
+    let maxCount = 0;
+    let primarySubject: string | undefined;
+    for (const [subject, count] of Object.entries(counts)) {
+      if (count > maxCount) {
+        maxCount = count;
+        primarySubject = subject;
+      }
+    }
+
+    return primarySubject;
+  }
+
+  /**
+   * List homeworks for a user with filters
    */
   static async listHomeworks(params: {
     userId: string;
     limit?: number;
     offset?: number;
     status?: "all" | HomeworkStatus;
-  }): Promise<{ homeworks: HomeworkListItem[]; total: number }> {
+    subject?: string;
+    dateRange?: HomeworkDateRange;
+  }): Promise<{ homeworks: HomeworkListItem[]; total: number; filterCounts: HomeworkFilterCounts }> {
     const { databases } = await createAdminClient();
-    const { userId, limit = 20, offset = 0, status = "all" } = params;
+    const { userId, limit = 20, offset = 0, status = "all", subject = "all", dateRange = "all" } = params;
 
-    const queries = [
+    // Build base queries (without filters for counting)
+    const baseQueries = [
       Query.equal("userId", userId),
       Query.orderDesc("$createdAt"),
-      Query.limit(limit),
-      Query.offset(offset),
     ];
 
-    if (status !== "all") {
-      queries.push(Query.equal("status", status));
-    }
-
-    const result = await databases.listDocuments(
+    // Get ALL homeworks for this user (for filter counts)
+    const allHomeworksResult = await databases.listDocuments(
       APPWRITE_CONFIG.databaseId,
       APPWRITE_CONFIG.collections.homeworks,
-      queries
+      [...baseQueries, Query.limit(500)] // Get all for counting
     );
 
-    const homeworks: HomeworkListItem[] = result.documents.map((doc) => ({
+    const allHomeworks = allHomeworksResult.documents;
+
+    // Get questions for all homeworks to determine primary subjects
+    const homeworkIds = allHomeworks.map((h) => h.$id);
+    let allQuestions: { homeworkId: string; detectedSubject: string }[] = [];
+
+    if (homeworkIds.length > 0) {
+      // Fetch questions in batches (Appwrite limit)
+      for (let i = 0; i < homeworkIds.length; i += 100) {
+        const batchIds = homeworkIds.slice(i, i + 100);
+        const questionsResult = await databases.listDocuments(
+          APPWRITE_CONFIG.databaseId,
+          APPWRITE_CONFIG.collections.homeworkQuestions,
+          [Query.equal("homeworkId", batchIds), Query.limit(1000)]
+        );
+        allQuestions = allQuestions.concat(
+          questionsResult.documents.map((q) => ({
+            homeworkId: q.homeworkId as string,
+            detectedSubject: (q.detectedSubject as string) || "Other",
+          }))
+        );
+      }
+    }
+
+    // Group questions by homework
+    const questionsByHomework = new Map<string, string[]>();
+    for (const q of allQuestions) {
+      const existing = questionsByHomework.get(q.homeworkId) || [];
+      existing.push(q.detectedSubject);
+      questionsByHomework.set(q.homeworkId, existing);
+    }
+
+    // Calculate primary subject for each homework
+    const homeworkPrimarySubjects = new Map<string, string | undefined>();
+    for (const [homeworkId, subjects] of questionsByHomework) {
+      homeworkPrimarySubjects.set(homeworkId, this.getPrimarySubject(subjects));
+    }
+
+    // Calculate filter counts
+    const filterCounts: HomeworkFilterCounts = {
+      bySubject: {},
+      byStatus: { all: allHomeworks.length, uploading: 0, processing: 0, completed: 0, failed: 0 },
+      byDateRange: { all: allHomeworks.length, today: 0, week: 0, month: 0 },
+      total: allHomeworks.length,
+    };
+
+    const todayStart = this.getDateRangeStart("today");
+    const weekStart = this.getDateRangeStart("week");
+    const monthStart = this.getDateRangeStart("month");
+
+    for (const hw of allHomeworks) {
+      // Status counts
+      const hwStatus = hw.status as HomeworkStatus;
+      filterCounts.byStatus[hwStatus] = (filterCounts.byStatus[hwStatus] || 0) + 1;
+
+      // Date range counts
+      const createdAt = new Date(hw.$createdAt);
+      if (todayStart && createdAt >= todayStart) filterCounts.byDateRange.today++;
+      if (weekStart && createdAt >= weekStart) filterCounts.byDateRange.week++;
+      if (monthStart && createdAt >= monthStart) filterCounts.byDateRange.month++;
+
+      // Subject counts
+      const primarySub = homeworkPrimarySubjects.get(hw.$id);
+      if (primarySub) {
+        filterCounts.bySubject[primarySub] = (filterCounts.bySubject[primarySub] || 0) + 1;
+      }
+    }
+
+    // Apply filters
+    let filteredHomeworks = allHomeworks;
+
+    // Status filter
+    if (status !== "all") {
+      filteredHomeworks = filteredHomeworks.filter((h) => h.status === status);
+    }
+
+    // Date range filter
+    const dateStart = this.getDateRangeStart(dateRange);
+    if (dateStart) {
+      filteredHomeworks = filteredHomeworks.filter((h) => new Date(h.$createdAt) >= dateStart);
+    }
+
+    // Subject filter
+    if (subject !== "all") {
+      filteredHomeworks = filteredHomeworks.filter((h) => {
+        const primarySub = homeworkPrimarySubjects.get(h.$id);
+        return primarySub === subject;
+      });
+    }
+
+    // Apply pagination
+    const paginatedHomeworks = filteredHomeworks.slice(offset, offset + limit);
+
+    // Map to HomeworkListItem with primarySubject
+    const homeworks: HomeworkListItem[] = paginatedHomeworks.map((doc) => ({
       $id: doc.$id,
       title: doc.title as string,
       originalFileName: doc.originalFileName as string,
@@ -252,10 +411,11 @@ export class HomeworkService {
       xpEarned: (doc.xpEarned as number) || 0,
       potentialXp: ((doc.questionCount as number) || 0) * XP_PER_QUESTION_VIEW,
       detectedLanguage: (doc.detectedLanguage as "en" | "he" | "mixed") || "en",
+      primarySubject: homeworkPrimarySubjects.get(doc.$id),
       $createdAt: doc.$createdAt,
     }));
 
-    return { homeworks, total: result.total };
+    return { homeworks, total: filteredHomeworks.length, filterCounts };
   }
 
   /**

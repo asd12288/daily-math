@@ -40,7 +40,7 @@ export function TopicPracticeView({ topicId }: TopicPracticeViewProps) {
   const { completeSessionAsync } = useCompleteSession();
 
   // Gamification toasts
-  const { showXpToast, showDailyComplete, showLevelUp } = useGamification();
+  const { showXpToast, showLevelUp } = useGamification();
 
   // Start session on mount
   useEffect(() => {

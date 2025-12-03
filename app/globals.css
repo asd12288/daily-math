@@ -213,6 +213,11 @@ body {
   font-size: 1.1em;
 }
 
+/* Dynamic KaTeX sizing via CSS variable */
+.katex-container .katex {
+  font-size: var(--katex-font-size, 1.1em) !important;
+}
+
 .math-display {
   overflow-x: auto;
   padding: var(--space-4);

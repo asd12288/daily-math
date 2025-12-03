@@ -7,15 +7,35 @@ import React, { useState, useRef, useCallback } from "react";
 import { Icon } from "@iconify/react";
 import { useTranslations } from "next-intl";
 import { Button, Input, Card, CardContent } from "@/shared/ui";
-import { useUploadHomework } from "../../hooks";
+import { useUploadHomework, type UploadErrorType } from "../../hooks";
 import {
   MAX_FILE_SIZE,
   MAX_FILE_SIZE_MB,
   MAX_PAGES,
   ALLOWED_FILE_TYPES,
-  ALLOWED_EXTENSIONS,
   STATUS_STYLES,
 } from "../../config/constants";
+
+/**
+ * Error display configuration for each error type
+ */
+const ERROR_CONFIG: Record<
+  UploadErrorType,
+  { icon: string; color: string; actionIcon?: string }
+> = {
+  file_type: { icon: "tabler:file-alert", color: "warning" },
+  file_size: { icon: "tabler:file-alert", color: "warning" },
+  upload_failed: { icon: "tabler:cloud-off", color: "error" },
+  network: { icon: "tabler:wifi-off", color: "error", actionIcon: "tabler:refresh" },
+  ai_credits: { icon: "tabler:credit-card-off", color: "warning", actionIcon: "tabler:mail" },
+  ai_rate_limit: { icon: "tabler:clock-pause", color: "warning", actionIcon: "tabler:clock" },
+  ai_unavailable: { icon: "tabler:robot-off", color: "warning", actionIcon: "tabler:refresh" },
+  processing: { icon: "tabler:alert-triangle", color: "error", actionIcon: "tabler:refresh" },
+  timeout: { icon: "tabler:clock-x", color: "warning", actionIcon: "tabler:refresh" },
+  server: { icon: "tabler:server-off", color: "error", actionIcon: "tabler:refresh" },
+  auth: { icon: "tabler:lock-x", color: "error" },
+  unknown: { icon: "tabler:alert-circle", color: "error", actionIcon: "tabler:refresh" },
+};
 
 interface HomeworkUploaderProps {
   onUploadComplete?: (homeworkId: string) => void;
@@ -40,6 +60,7 @@ export function HomeworkUploader({
     status,
     progress,
     error,
+    errorType,
     homeworkId,
     isUploading,
     isComplete,
@@ -205,26 +226,101 @@ export function HomeworkUploader({
       );
     }
 
-    // Show error state
+    // Show error state with specific error type feedback
     if (isError) {
+      const currentErrorType = errorType || "unknown";
+      const errorConfig = ERROR_CONFIG[currentErrorType];
+      const colorClass = errorConfig.color === "warning" ? "warning" : "error";
+
       return (
         <div className="text-center py-8">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-error-100 dark:bg-error-900/30 flex items-center justify-center">
+          {/* Error icon */}
+          <div
+            className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+              colorClass === "warning"
+                ? "bg-warning-100 dark:bg-warning-900/30"
+                : "bg-error-100 dark:bg-error-900/30"
+            }`}
+          >
             <Icon
-              icon="tabler:alert-circle"
+              icon={errorConfig.icon}
               height={32}
-              className="text-error-600 dark:text-error-400"
+              className={
+                colorClass === "warning"
+                  ? "text-warning-600 dark:text-warning-400"
+                  : "text-error-600 dark:text-error-400"
+              }
             />
           </div>
+
+          {/* Error title - translated based on type */}
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            {t("homework.uploadFailed")}
+            {t(`homework.errors.titles.${currentErrorType}`, {
+              defaultValue: t("homework.uploadFailed"),
+            })}
           </h3>
-          <p className="text-sm text-error-600 dark:text-error-400 mb-6">
-            {error || t("homework.errors.processingFailed")}
+
+          {/* Error description - translated based on type */}
+          <p
+            className={`text-sm mb-3 ${
+              colorClass === "warning"
+                ? "text-warning-700 dark:text-warning-300"
+                : "text-error-600 dark:text-error-400"
+            }`}
+          >
+            {t(`homework.errors.descriptions.${currentErrorType}`, {
+              defaultValue: error || t("homework.errors.processingFailed"),
+            })}
           </p>
-          <Button variant="outline" onClick={handleReset} icon="tabler:refresh">
-            {t("common.tryAgain")}
-          </Button>
+
+          {/* Suggested action */}
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">
+            {t(`homework.errors.suggestions.${currentErrorType}`, {
+              defaultValue: t("homework.errors.suggestions.unknown"),
+            })}
+          </p>
+
+          {/* Action buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              variant="outline"
+              onClick={handleReset}
+              icon={errorConfig.actionIcon || "tabler:refresh"}
+            >
+              {t("common.tryAgain")}
+            </Button>
+
+            {/* Show contact support for AI credits issue */}
+            {currentErrorType === "ai_credits" && (
+              <Button
+                variant="primary"
+                onClick={() => window.open("mailto:support@dailymath.com", "_blank")}
+                icon="tabler:mail"
+              >
+                {t("homework.errors.contactSupport")}
+              </Button>
+            )}
+
+            {/* Show "try later" info for rate limits */}
+            {currentErrorType === "ai_rate_limit" && (
+              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-warning-50 dark:bg-warning-900/20 text-warning-700 dark:text-warning-300 text-sm">
+                <Icon icon="tabler:clock" height={16} />
+                {t("homework.errors.waitAndRetry")}
+              </div>
+            )}
+          </div>
+
+          {/* Technical details (collapsible) - useful for debugging */}
+          {error && (
+            <details className="mt-6 text-left max-w-md mx-auto">
+              <summary className="text-xs text-gray-400 dark:text-gray-500 cursor-pointer hover:text-gray-600 dark:hover:text-gray-400">
+                {t("homework.errors.technicalDetails")}
+              </summary>
+              <pre className="mt-2 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs text-gray-600 dark:text-gray-400 overflow-x-auto whitespace-pre-wrap break-words">
+                {error}
+              </pre>
+            </details>
+          )}
         </div>
       );
     }

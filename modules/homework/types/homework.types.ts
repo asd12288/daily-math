@@ -334,7 +334,23 @@ export interface HomeworkListItem {
   xpEarned: number;
   potentialXp: number; // questionCount * XP_PER_QUESTION_VIEW
   detectedLanguage: DetectedLanguage;
+  primarySubject?: string; // Most common subject from questions (e.g., "Calculus 1")
   $createdAt: string;
+}
+
+/**
+ * Filter options for homework list
+ */
+export type HomeworkDateRange = "all" | "today" | "week" | "month";
+
+/**
+ * Filter counts for homework list (used in filter UI)
+ */
+export interface HomeworkFilterCounts {
+  bySubject: Record<string, number>; // e.g., { "Calculus 1": 5, "Physics 1": 3 }
+  byStatus: Record<HomeworkStatus | "all", number>;
+  byDateRange: Record<HomeworkDateRange, number>;
+  total: number;
 }
 
 /**

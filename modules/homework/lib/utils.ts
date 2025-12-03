@@ -6,6 +6,9 @@ import type { HomeworkQuestionWithSolution, QuestionGroup } from "../types";
 /**
  * Group questions into hierarchical groups (parent + sub-questions)
  * Used for UI display of physics/math questions with sub-parts
+ *
+ * Handles orphaned sub-questions (isSubQuestion=true but no parentQuestionId)
+ * by treating them as standalone questions.
  */
 export function groupQuestionsByHierarchy(
   questions: HomeworkQuestionWithSolution[]
@@ -16,16 +19,33 @@ export function groupQuestionsByHierarchy(
   const parentQuestions = questions.filter((q) => !q.isSubQuestion);
   const subQuestions = questions.filter((q) => q.isSubQuestion);
 
+  // Identify orphaned sub-questions (no valid parentQuestionId)
+  const parentIds = new Set(parentQuestions.map((p) => p.$id));
+  const orphanedSubQuestions = subQuestions.filter(
+    (sq) => !sq.parentQuestionId || !parentIds.has(sq.parentQuestionId)
+  );
+  const linkedSubQuestions = subQuestions.filter(
+    (sq) => sq.parentQuestionId && parentIds.has(sq.parentQuestionId)
+  );
+
   // Create groups for each parent question
   for (const parent of parentQuestions) {
     // Find all sub-questions that belong to this parent
-    const children = subQuestions
+    const children = linkedSubQuestions
       .filter((sq) => sq.parentQuestionId === parent.$id)
       .sort((a, b) => a.orderIndex - b.orderIndex);
 
     groups.push({
       parentQuestion: parent,
       subQuestions: children,
+    });
+  }
+
+  // Treat orphaned sub-questions as standalone parent questions
+  for (const orphan of orphanedSubQuestions) {
+    groups.push({
+      parentQuestion: orphan,
+      subQuestions: [],
     });
   }
 

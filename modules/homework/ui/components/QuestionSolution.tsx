@@ -12,6 +12,7 @@ import type { HomeworkQuestionWithSolution, CombinedSolutionSteps } from "../../
 
 interface QuestionSolutionProps {
   question: HomeworkQuestionWithSolution;
+  isGenerating?: boolean;
   onHide?: () => void;
 }
 
@@ -46,6 +47,7 @@ function parseStepContent(step: string): { text: string; math: string | null } {
 
 export function QuestionSolution({
   question,
+  isGenerating = false,
   onHide,
 }: QuestionSolutionProps) {
   const t = useTranslations();
@@ -88,12 +90,13 @@ export function QuestionSolution({
     : question.solution?.tip;
 
   // Handle missing solution (on-demand generation not yet triggered)
-  if (!question.solution && question.solutionStatus === "pending") {
+  // Skip this check if isGenerating is true (we want to show loading state)
+  if (!question.solution && question.solutionStatus === "pending" && !isGenerating) {
     return null;
   }
 
-  // Handle generating state
-  if (question.solutionStatus === "generating") {
+  // Handle generating state (either from solutionStatus or explicit isGenerating prop)
+  if (question.solutionStatus === "generating" || isGenerating) {
     return (
       <div className="py-8">
         <div className="flex flex-col items-center justify-center text-center">
@@ -143,7 +146,7 @@ export function QuestionSolution({
         {/* Answer box - clean with left border accent */}
         <div className="relative ps-4 border-s-2 border-success-400 dark:border-success-500">
           <div dir="ltr" className="py-2">
-            <MathDisplay content={question.answer} size="lg" />
+            <MathDisplay content={question.answer} size="2xl" />
           </div>
         </div>
       </div>
@@ -196,7 +199,7 @@ export function QuestionSolution({
                     <div className="flex-1 pt-0.5">
                       <MathDisplay
                         content={text}
-                        size="sm"
+                        size="xl"
                         className="text-gray-700 dark:text-gray-300 leading-relaxed"
                       />
                     </div>
@@ -205,7 +208,7 @@ export function QuestionSolution({
                   {/* Separated math block (if substantial) */}
                   {math && (
                     <div className="ms-9 mt-2 py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                      <MathEquation content={math} size="md" />
+                      <MathEquation content={math} size="2xl" />
                     </div>
                   )}
                 </div>
@@ -238,9 +241,9 @@ export function QuestionSolution({
             <span className="text-xs font-medium text-warning-600 dark:text-warning-400">
               {t("homework.tip")}:
             </span>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5 leading-relaxed">
-              {tip}
-            </p>
+            <div className="text-gray-600 dark:text-gray-400 mt-0.5 leading-relaxed">
+              <MathDisplay content={tip} size="xl" />
+            </div>
           </div>
         </div>
       )}

@@ -24,13 +24,13 @@ export function PracticeView() {
   // Fetch daily set from backend
   const { dailySet, isLoading, error, refetch } = useTodaySet();
   const { submitAnswerAsync } = useSubmitAnswer();
-  const { uploadImageAsync, isUploading } = useUploadAnswerImage();
+  const { uploadImageAsync } = useUploadAnswerImage();
 
   // Fetch user profile for streak display
   const { data: userProfile } = trpc.dashboard.getUserProfile.useQuery();
 
   // Gamification toasts
-  const { showXpToast, showDailyComplete } = useGamification();
+  const { showDailyComplete } = useGamification();
 
   const [viewMode, setViewMode] = useState<ViewMode>("loading");
   const [results, setResults] = useState<WorksheetResultsType | null>(null);

@@ -1,8 +1,11 @@
 import {
   LandingHeader,
   LandingBanner,
-  HowItWorks,
-  LandingFeatures,
+  AIPoweredSection,
+  FeatureHomework,
+  FeaturePractice,
+  FeatureHints,
+  BenefitsGrid,
   AppShowcase,
   Testimonials,
   Pricing,
@@ -16,8 +19,11 @@ export default function LandingPage() {
       <LandingHeader />
       <main className="flex-grow">
         <LandingBanner />
-        <HowItWorks />
-        <LandingFeatures />
+        <AIPoweredSection />
+        <FeatureHomework />
+        <FeaturePractice />
+        <FeatureHints />
+        <BenefitsGrid />
         <AppShowcase />
         <Testimonials />
         <Pricing />

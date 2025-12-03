@@ -396,19 +396,101 @@ function CoursesViewSkeleton() {
     <div className="space-y-6">
       {/* Header skeleton */}
       <div className="space-y-2">
-        <div className="h-8 w-48 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
-        <div className="h-5 w-72 bg-gray-200 dark:bg-gray-800 rounded animate-pulse" />
+        <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+        <div className="h-5 w-72 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
       </div>
 
-      {/* Grid skeleton */}
+      {/* Stats Summary skeleton */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+                <div className="space-y-2">
+                  <div className="h-6 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Tabs skeleton */}
+      <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-2 px-4 py-3">
+          <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="h-5 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+        </div>
+        <div className="flex items-center gap-2 px-4 py-3">
+          <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="h-5 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+        </div>
+      </div>
+
+      {/* Course Cards Grid skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="h-64 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse"
-          />
+          <CourseCardSkeleton key={i} />
         ))}
       </div>
     </div>
+  );
+}
+
+function CourseCardSkeleton() {
+  return (
+    <Card className="h-full">
+      <CardContent className="p-6">
+        {/* Header with icon */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="w-14 h-14 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse" />
+        </div>
+
+        {/* Course name */}
+        <div className="h-6 w-3/4 bg-gray-200 dark:bg-gray-700 rounded-lg mb-2 animate-pulse" />
+
+        {/* Description - 2 lines */}
+        <div className="space-y-1.5 mb-4">
+          <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="h-4 w-2/3 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        </div>
+
+        {/* Progress section */}
+        <div className="space-y-3">
+          {/* Progress bar */}
+          <div>
+            <div className="flex justify-between mb-1.5">
+              <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="h-4 w-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+            </div>
+            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+          </div>
+
+          {/* Stats row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex items-center justify-between">
+            <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+            <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

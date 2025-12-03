@@ -1,5 +1,5 @@
 // modules/homework/ui/views/homework-list-view.tsx
-// Main view for listing all homework uploads
+// Main view for listing all homework uploads with list layout and filters
 
 "use client";
 
@@ -10,9 +10,10 @@ import { useRouter } from "next/navigation";
 import { Button, Card, CardContent } from "@/shared/ui";
 import { Modal } from "@/shared/ui/modal";
 import { useHomeworkList, useDeleteHomework } from "../../hooks";
-import { HomeworkCard } from "../components/HomeworkCard";
+import { HomeworkListRow } from "../components/HomeworkListRow";
+import { HomeworkFilters } from "../components/HomeworkFilters";
 import { HomeworkUploader } from "../components/HomeworkUploader";
-import type { HomeworkListItem } from "../../types";
+import type { HomeworkListItem, HomeworkStatus, HomeworkDateRange } from "../../types";
 
 export function HomeworkListView() {
   const t = useTranslations();
@@ -21,14 +22,24 @@ export function HomeworkListView() {
   const [showUploader, setShowUploader] = useState(false);
   const [homeworkToDelete, setHomeworkToDelete] = useState<HomeworkListItem | null>(null);
 
+  // Filter state
+  const [selectedSubject, setSelectedSubject] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<"all" | HomeworkStatus>("all");
+  const [selectedDateRange, setSelectedDateRange] = useState<HomeworkDateRange>("all");
+
   const {
     homeworks,
     isLoading,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
+    filterCounts,
     error,
-  } = useHomeworkList();
+  } = useHomeworkList({
+    status: selectedStatus,
+    subject: selectedSubject,
+    dateRange: selectedDateRange,
+  });
 
   const { deleteHomeworkAsync, isLoading: isDeleting } = useDeleteHomework();
 
@@ -57,19 +68,30 @@ export function HomeworkListView() {
     router.push(`/homework/${homeworkId}`);
   };
 
+  // Check if any filters are active
+  const hasActiveFilters = selectedSubject !== "all" || selectedStatus !== "all" || selectedDateRange !== "all";
+
+  // Reset filters
+  const resetFilters = () => {
+    setSelectedSubject("all");
+    setSelectedStatus("all");
+    setSelectedDateRange("all");
+  };
+
   // Render loading state
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <div className="text-center">
-          <Icon
-            icon="tabler:loader-2"
-            height={40}
-            className="mx-auto mb-4 text-primary-500 animate-spin"
-          />
-          <p className="text-gray-500 dark:text-gray-400">
-            {t("common.loading")}
-          </p>
+      <div className="space-y-4">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="h-9 w-36 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        </div>
+        {/* List skeleton */}
+        <div className="space-y-2">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />
+          ))}
         </div>
       </div>
     );
@@ -99,24 +121,46 @@ export function HomeworkListView() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+    <div className="space-y-4">
+      {/* Header with title, filters, and upload button */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
             {t("homework.title")}
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
-            {t("homework.subtitle")}
-          </p>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setShowUploader(true)}
+            icon="tabler:plus"
+          >
+            {t("homework.uploadNew")}
+          </Button>
         </div>
-        <Button
-          variant="primary"
-          onClick={() => setShowUploader(true)}
-          icon="tabler:upload"
-        >
-          {t("homework.uploadNew")}
-        </Button>
+
+        {/* Filters row - only show if we have homeworks */}
+        {filterCounts.total > 0 && (
+          <div className="flex items-center justify-between gap-3">
+            <HomeworkFilters
+              selectedSubject={selectedSubject}
+              selectedStatus={selectedStatus}
+              selectedDateRange={selectedDateRange}
+              onSubjectChange={setSelectedSubject}
+              onStatusChange={setSelectedStatus}
+              onDateRangeChange={setSelectedDateRange}
+              filterCounts={filterCounts}
+            />
+            {hasActiveFilters && (
+              <button
+                onClick={resetFilters}
+                className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 flex items-center gap-1 flex-shrink-0"
+              >
+                <Icon icon="tabler:x" height={14} />
+                <span className="hidden sm:inline">{t("homework.filters.clearAll")}</span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Upload modal */}
@@ -134,8 +178,8 @@ export function HomeworkListView() {
         </Modal>
       )}
 
-      {/* Empty state */}
-      {homeworks.length === 0 && (
+      {/* Empty state - no homeworks at all */}
+      {filterCounts.total === 0 && !isLoading && (
         <Card>
           <CardContent>
             <div className="text-center py-12">
@@ -164,11 +208,35 @@ export function HomeworkListView() {
         </Card>
       )}
 
-      {/* Homework grid */}
+      {/* Empty state - no results for current filters */}
+      {filterCounts.total > 0 && homeworks.length === 0 && !isLoading && (
+        <Card>
+          <CardContent>
+            <div className="text-center py-10">
+              <Icon
+                icon="tabler:filter-off"
+                height={32}
+                className="mx-auto mb-3 text-gray-400"
+              />
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                {t("homework.noResultsTitle")}
+              </p>
+              <button
+                onClick={resetFilters}
+                className="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+              >
+                {t("homework.filters.clearAll")}
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Homework list */}
       {homeworks.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-2">
           {homeworks.map((homework) => (
-            <HomeworkCard
+            <HomeworkListRow
               key={homework.$id}
               homework={homework}
               onClick={() => handleHomeworkClick(homework)}
@@ -180,12 +248,12 @@ export function HomeworkListView() {
 
       {/* Load more button */}
       {hasNextPage && (
-        <div className="flex justify-center pt-4">
+        <div className="flex justify-center pt-2">
           <Button
-            variant="outline"
+            variant="ghost"
+            size="sm"
             onClick={() => fetchNextPage()}
             isLoading={isFetchingNextPage}
-            icon="tabler:chevron-down"
           >
             {t("common.loadMore")}
           </Button>

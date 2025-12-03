@@ -4,7 +4,7 @@
 import { Query } from "node-appwrite";
 import { createAdminClient } from "@/lib/appwrite/server";
 import { APPWRITE_CONFIG } from "@/lib/appwrite/config";
-import type { TopicVideo, VideoLanguage, VideoSource, VideosByLanguage } from "@/lib/appwrite/types";
+import type { VideoLanguage, VideoSource, VideosByLanguage } from "@/lib/appwrite/types";
 
 const { databaseId, collections } = APPWRITE_CONFIG;
 

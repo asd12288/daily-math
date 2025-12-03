@@ -6,7 +6,7 @@ import { Button } from "flowbite-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AUTH_ROUTES } from "@/modules/auth/config/routes";
-import { IconRocket } from "@tabler/icons-react";
+import { IconSparkles, IconFileText, IconTargetArrow, IconBulb } from "@tabler/icons-react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
@@ -34,7 +34,7 @@ export const LandingBanner = () => {
               data-aos-delay="200"
               data-aos-duration="1000"
             >
-              <IconRocket className="text-secondary-500" size={17} /> {t("badge")}
+              <IconSparkles className="text-secondary-500" size={17} /> {t("badge")}
             </h6>
             <h1
               className="font-bold mb-7 text-4xl sm:text-5xl lg:text-[55px] leading-tight sm:leading-[55px] text-gray-900 dark:text-white"
@@ -53,6 +53,28 @@ export const LandingBanner = () => {
             >
               {t("subtitle")}
             </p>
+
+            {/* AI Feature Micro-Badges */}
+            <div
+              className="flex flex-wrap gap-3 mt-6"
+              data-aos="fade-up"
+              data-aos-delay="700"
+              data-aos-duration="1000"
+            >
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm font-medium">
+                <IconFileText size={16} />
+                {t("badges.homework")}
+              </span>
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-success-100 dark:bg-success-900/30 text-success-700 dark:text-success-300 text-sm font-medium">
+                <IconTargetArrow size={16} />
+                {t("badges.practice")}
+              </span>
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300 text-sm font-medium">
+                <IconBulb size={16} />
+                {t("badges.hints")}
+              </span>
+            </div>
+
             <div
               className="sm:flex gap-3 mt-8"
               data-aos="fade-up"

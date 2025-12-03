@@ -1,12 +1,11 @@
 // modules/homework/ui/components/QuestionGroupCard.tsx
-// Ultra-minimal question group card - focus on the problem
+// Clean, minimal question card design
 
 "use client";
 
 import React, { useState } from "react";
 import { Icon } from "@iconify/react";
 import { useTranslations, useLocale } from "next-intl";
-import { Card } from "@/shared/ui";
 import { MathDisplay } from "@/shared/ui/math-display";
 import type { QuestionGroup, HomeworkQuestionWithSolution } from "../../types";
 import { QuestionSolution } from "./QuestionSolution";
@@ -17,6 +16,73 @@ interface QuestionGroupCardProps {
   onViewSolution?: (questionId: string) => void;
   isViewingSolution?: boolean;
   generatingQuestionId?: string | null;
+}
+
+// Reusable solution button component
+function SolutionButton({
+  question,
+  isGenerating,
+  hasFailed,
+  isViewingSolution,
+  generatingQuestionId,
+  onView,
+  t,
+}: {
+  question: HomeworkQuestionWithSolution;
+  isGenerating: boolean;
+  hasFailed: boolean;
+  isViewingSolution: boolean;
+  generatingQuestionId: string | null;
+  onView: () => void;
+  t: (key: string) => string;
+}) {
+  if (isGenerating) {
+    return (
+      <span className="inline-flex items-center gap-2 text-sm text-primary-500">
+        <Icon icon="tabler:loader-2" height={14} className="animate-spin" />
+        <span className="text-gray-400">{t("homework.generatingSolution")}</span>
+      </span>
+    );
+  }
+
+  if (hasFailed) {
+    return (
+      <button
+        onClick={onView}
+        disabled={isViewingSolution}
+        className="inline-flex items-center gap-1.5 text-sm text-error-500 hover:text-error-600 transition-colors"
+      >
+        <Icon icon="tabler:refresh" height={14} />
+        {t("common.tryAgain")}
+      </button>
+    );
+  }
+
+  return (
+    <button
+      onClick={onView}
+      disabled={isViewingSolution && generatingQuestionId === question.$id}
+      className={`
+        inline-flex items-center gap-1.5 text-sm transition-colors
+        ${question.isViewed
+          ? "text-gray-400 hover:text-gray-500"
+          : "text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+        }
+      `}
+    >
+      {question.isViewed ? (
+        <>
+          <Icon icon="tabler:eye-check" height={14} />
+          {t("homework.viewSolutionAgain")}
+        </>
+      ) : (
+        <>
+          <Icon icon="tabler:eye" height={14} />
+          {t("homework.viewSolution")}
+        </>
+      )}
+    </button>
+  );
 }
 
 export function QuestionGroupCard({
@@ -44,6 +110,10 @@ export function QuestionGroupCard({
   const isGenerating = (q: HomeworkQuestionWithSolution) =>
     q.solutionStatus === "generating" || generatingQuestionId === q.$id;
 
+  // Check if solution generation failed
+  const hasFailed = (q: HomeworkQuestionWithSolution) =>
+    q.solutionStatus === "failed";
+
   // Handle view solution click
   const handleViewSolution = (questionId: string, isViewed: boolean) => {
     if (!isViewed && onViewSolution) {
@@ -52,113 +122,115 @@ export function QuestionGroupCard({
     setShownSolutions((prev) => new Set(prev).add(questionId));
   };
 
+  // Hide solution
+  const hideSolution = (questionId: string) => {
+    setShownSolutions((prev) => {
+      const next = new Set(prev);
+      next.delete(questionId);
+      return next;
+    });
+  };
+
   // Check if all questions are viewed
   const allQuestions = hasSubQuestions ? [parentQuestion, ...subQuestions] : [parentQuestion];
   const isGroupComplete = allQuestions.every((q) => q.isViewed);
 
   return (
-    <Card className="relative overflow-visible">
-      {/* ─── Question Number Badge ─── */}
-      <div className="absolute -top-3 -start-3 z-10">
-        <div className={`
-          w-9 h-9 rounded-xl shadow-md flex items-center justify-center font-bold
-          ${isGroupComplete
-            ? 'bg-success-500 text-white'
-            : 'bg-primary-600 dark:bg-primary-500 text-white'
-          }
-        `}>
-          {groupNumber}
-        </div>
-      </div>
-
-      <div className="pt-2">
-        {/* ─── Question Content ─── */}
-        <div className="mb-4">
-          <MathDisplay
-            content={getQuestionText(parentQuestion)}
-            size="xl"
-            className="text-gray-900 dark:text-gray-100 leading-relaxed"
-          />
-        </div>
-
-        {/* ─── AI Illustration (if available) ─── */}
-        {parentQuestion.illustrationUrl && (
-          <div className="mb-4 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-            <img
-              src={parentQuestion.illustrationUrl}
-              alt={t("homework.illustrationAlt")}
-              className="w-full h-auto max-h-48 object-contain bg-white dark:bg-gray-900"
-              loading="lazy"
-            />
+    <div className="group">
+      {/* Main card */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+        {/* Question header with number */}
+        <div className="flex items-start gap-4 p-5">
+          {/* Question number */}
+          <div
+            className={`
+              flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-semibold
+              ${isGroupComplete
+                ? "bg-success-100 text-success-600 dark:bg-success-900/30 dark:text-success-400"
+                : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+              }
+            `}
+          >
+            {isGroupComplete ? <Icon icon="tabler:check" height={16} /> : groupNumber}
           </div>
-        )}
 
-        {/* ─── Sub-questions ─── */}
+          {/* Question content */}
+          <div className="flex-1 min-w-0">
+            <MathDisplay
+              content={getQuestionText(parentQuestion)}
+              size="2xl"
+              className="text-gray-800 dark:text-gray-200 leading-relaxed"
+            />
+
+            {/* AI Illustration */}
+            {parentQuestion.illustrationUrl && (
+              <div className="mt-4 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800">
+                <img
+                  src={parentQuestion.illustrationUrl}
+                  alt={t("homework.illustrationAlt")}
+                  className="w-full h-auto max-h-40 object-contain"
+                  loading="lazy"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sub-questions or single question action */}
         {hasSubQuestions ? (
-          <div className="space-y-4 mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
-            <div className="text-xs font-medium text-gray-400 uppercase tracking-wide">
-              {t("homework.subQuestions")} ({subQuestions.length})
-            </div>
-
-            {subQuestions.map((subQ) => {
+          <div className="border-t border-gray-100 dark:border-gray-800">
+            {subQuestions.map((subQ, idx) => {
               const isShown = shownSolutions.has(subQ.$id);
 
               return (
                 <div
                   key={subQ.$id}
-                  className="relative ps-8 pb-4 border-b border-gray-100 dark:border-gray-800 last:border-0 last:pb-0"
+                  className={`
+                    ${idx !== subQuestions.length - 1 ? "border-b border-gray-50 dark:border-gray-800/50" : ""}
+                  `}
                 >
-                  {/* Sub-question label */}
-                  <div className="absolute start-0 top-0 w-6 h-6 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 flex items-center justify-center font-semibold text-sm">
-                    {subQ.subQuestionLabel || "?"}
-                  </div>
+                  {/* Sub-question row */}
+                  <div className="flex items-start gap-3 px-5 py-4">
+                    {/* Label */}
+                    <span className="flex-shrink-0 w-6 h-6 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 flex items-center justify-center text-xs font-medium">
+                      {subQ.subQuestionLabel || String.fromCharCode(97 + idx)}
+                    </span>
 
-                  {/* Sub-question text */}
-                  <div className="mb-3">
-                    <MathDisplay
-                      content={getQuestionText(subQ)}
-                      size="lg"
-                      className="text-gray-800 dark:text-gray-200"
-                    />
-                  </div>
-
-                  {/* Solution section */}
-                  {!isShown ? (
-                    <div className="flex justify-end">
-                      {isGenerating(subQ) ? (
-                        <span className="inline-flex items-center gap-1.5 text-sm text-primary-500">
-                          <Icon icon="tabler:loader-2" height={16} className="animate-spin" />
-                          {t("homework.generatingSolution")}
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => handleViewSolution(subQ.$id, subQ.isViewed)}
-                          disabled={isViewingSolution && generatingQuestionId === subQ.$id}
-                          className={`
-                            inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-                            ${subQ.isViewed
-                              ? 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                              : 'bg-primary-600 hover:bg-primary-700 text-white'
-                            }
-                          `}
-                        >
-                          <Icon icon="tabler:eye" height={16} />
-                          {subQ.isViewed ? t("homework.viewSolutionAgain") : t("homework.viewSolution")}
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="mt-4">
-                      <QuestionSolution
-                        question={subQ}
-                        onHide={() =>
-                          setShownSolutions((prev) => {
-                            const next = new Set(prev);
-                            next.delete(subQ.$id);
-                            return next;
-                          })
-                        }
+                    {/* Content + action */}
+                    <div className="flex-1 min-w-0">
+                      <MathDisplay
+                        content={getQuestionText(subQ)}
+                        size="xl"
+                        className="text-gray-700 dark:text-gray-300"
                       />
+                    </div>
+
+                    {/* Action */}
+                    {!isShown && (
+                      <div className="flex-shrink-0">
+                        <SolutionButton
+                          question={subQ}
+                          isGenerating={isGenerating(subQ)}
+                          hasFailed={hasFailed(subQ)}
+                          isViewingSolution={isViewingSolution}
+                          generatingQuestionId={generatingQuestionId || null}
+                          onView={() => handleViewSolution(subQ.$id, subQ.isViewed)}
+                          t={t}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Expanded solution */}
+                  {isShown && (
+                    <div className="px-5 pb-4 ps-14">
+                      <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+                        <QuestionSolution
+                          question={subQ}
+                          isGenerating={generatingQuestionId === subQ.$id}
+                          onHide={() => hideSolution(subQ.$id)}
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
@@ -166,49 +238,34 @@ export function QuestionGroupCard({
             })}
           </div>
         ) : (
-          // Single question (no sub-questions) - show solution button
-          <div className="mt-4 flex justify-end">
+          // Single question - action in footer
+          <>
             {!shownSolutions.has(parentQuestion.$id) ? (
-              <>
-                {isGenerating(parentQuestion) ? (
-                  <span className="inline-flex items-center gap-1.5 text-sm text-primary-500">
-                    <Icon icon="tabler:loader-2" height={16} className="animate-spin" />
-                    {t("homework.generatingSolution")}
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => handleViewSolution(parentQuestion.$id, parentQuestion.isViewed)}
-                    disabled={isViewingSolution && generatingQuestionId === parentQuestion.$id}
-                    className={`
-                      inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-                      ${parentQuestion.isViewed
-                        ? 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-                        : 'bg-primary-600 hover:bg-primary-700 text-white'
-                      }
-                    `}
-                  >
-                    <Icon icon="tabler:eye" height={16} />
-                    {parentQuestion.isViewed ? t("homework.viewSolutionAgain") : t("homework.viewSolution")}
-                  </button>
-                )}
-              </>
-            ) : (
-              <div className="w-full pt-4 border-t border-gray-100 dark:border-gray-800">
-                <QuestionSolution
+              <div className="px-5 pb-4 flex justify-end">
+                <SolutionButton
                   question={parentQuestion}
-                  onHide={() =>
-                    setShownSolutions((prev) => {
-                      const next = new Set(prev);
-                      next.delete(parentQuestion.$id);
-                      return next;
-                    })
-                  }
+                  isGenerating={isGenerating(parentQuestion)}
+                  hasFailed={hasFailed(parentQuestion)}
+                  isViewingSolution={isViewingSolution}
+                  generatingQuestionId={generatingQuestionId || null}
+                  onView={() => handleViewSolution(parentQuestion.$id, parentQuestion.isViewed)}
+                  t={t}
                 />
               </div>
+            ) : (
+              <div className="border-t border-gray-100 dark:border-gray-800 p-5">
+                <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+                  <QuestionSolution
+                    question={parentQuestion}
+                    isGenerating={generatingQuestionId === parentQuestion.$id}
+                    onHide={() => hideSolution(parentQuestion.$id)}
+                  />
+                </div>
+              </div>
             )}
-          </div>
+          </>
         )}
       </div>
-    </Card>
+    </div>
   );
 }

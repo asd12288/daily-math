@@ -1,9 +1,8 @@
 // modules/homework/server/services/adaptive-solving.service.ts
 // Complexity-aware question solving with dynamic prompts and schemas
 
-import { generateObject } from "ai";
+import { generateObject, createGateway } from "ai";
 import { z } from "zod/v4";
-import { gateway } from "ai";
 import type {
   ClassifiedQuestion,
   SolvedQuestion,
@@ -13,9 +12,17 @@ import type {
 } from "../../types";
 
 /**
- * Model configuration
+ * Vercel AI Gateway configuration
+ * Uses AI_GATEWAY_API_KEY environment variable
  */
-const SOLVING_MODEL = gateway("google/gemini-2.5-flash");
+const gateway = createGateway({
+  apiKey: process.env.AI_GATEWAY_API_KEY ?? "",
+});
+
+/**
+ * Model configuration - using Gemini 2.0 Flash via AI Gateway
+ */
+const SOLVING_MODEL = gateway("google/gemini-2.0-flash");
 
 /**
  * Temperature settings by complexity

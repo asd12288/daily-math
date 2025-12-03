@@ -15,12 +15,11 @@ import type { ExerciseDifficulty } from "@/lib/appwrite/types";
 
 interface PracticeTabProps {
   topic: TopicDocument;
-  courseId: string;
 }
 
 type FilterType = "all" | "easy" | "medium" | "hard";
 
-export function PracticeTab({ topic, courseId }: PracticeTabProps) {
+export function PracticeTab({ topic }: PracticeTabProps) {
   const t = useTranslations();
   const locale = useLocale();
   const isHe = locale === "he";
@@ -112,7 +111,6 @@ export function PracticeTab({ topic, courseId }: PracticeTabProps) {
               exercise={exercise}
               index={index + 1}
               isHe={isHe}
-              courseId={courseId}
               topicId={topic.$id}
             />
           ))}
@@ -129,13 +127,13 @@ export function PracticeTab({ topic, courseId }: PracticeTabProps) {
         </div>
       )}
 
-      {/* Start practice button */}
+      {/* Start practice session button */}
       {filteredExercises.length > 0 && (
         <div className="flex justify-center pt-4">
-          <Link href={`/${locale}/practice?topic=${topic.$id}`}>
+          <Link href={`/${locale}/session/start?source=topic&id=${topic.$id}`}>
             <Button variant="primary" size="lg">
               <Icon icon="tabler:player-play" className="w-5 h-5 me-2" />
-              {t("topics.startPractice")}
+              {t("session.startSession")}
             </Button>
           </Link>
         </div>
@@ -175,11 +173,10 @@ interface ExerciseCardProps {
   };
   index: number;
   isHe: boolean;
-  courseId: string;
   topicId: string;
 }
 
-function ExerciseCard({ exercise, index, isHe, courseId, topicId }: ExerciseCardProps) {
+function ExerciseCard({ exercise, index, isHe, topicId }: ExerciseCardProps) {
   const t = useTranslations();
   const locale = useLocale();
 

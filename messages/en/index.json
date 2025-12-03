@@ -24,7 +24,9 @@
     "loadMore": "Load More",
     "copy": "Copy",
     "copied": "Copied!",
-    "min": "min"
+    "min": "min",
+    "goBack": "Go Back",
+    "backToDashboard": "Back to Dashboard"
   },
   "nav": {
     "home": "Home",
@@ -516,57 +518,137 @@
       "dashboard": "Dashboard"
     },
     "hero": {
-      "badge": "Kick start your math journey",
-      "title": "Master Math with",
-      "titleHighlight": "Daily Practice",
-      "subtitle": "AI-powered exercises, handwork verification, and gamification to help you ace your math and physics courses.",
+      "badge": "AI-Powered Learning",
+      "title": "Your AI Math Tutor",
+      "titleHighlight": "is Here",
+      "subtitle": "Upload homework for instant solutions. Practice daily with AI-generated exercises. Get Socratic hints when you're stuck. All in Hebrew and English.",
       "getStarted": "Start Free",
-      "learnMore": "See How It Works"
-    },
-    "howItWorks": {
-      "badge": "Simple Process",
-      "title": "How DailyMath Works",
-      "step1": {
-        "title": "Choose Your Exercises",
-        "desc": "Select 1-10 exercises per day and pick your courses. Customize your daily practice routine."
-      },
-      "step2": {
-        "title": "Practice Daily",
-        "desc": "Solve problems on paper, then upload your handwork for AI verification or self-mark."
-      },
-      "step3": {
-        "title": "Track & Level Up",
-        "desc": "Earn XP, maintain streaks, and climb levels as you master new concepts."
+      "learnMore": "See How It Works",
+      "badges": {
+        "homework": "Homework AI",
+        "practice": "Daily Practice",
+        "hints": "Smart Hints"
       }
     },
-    "features": {
-      "badge": "Why DailyMath?",
-      "title": "Everything You Need to Succeed",
-      "items": {
-        "daily": {
-          "title": "Daily Exercises",
-          "desc": "Fresh AI-generated problems delivered every day to keep your skills sharp."
-        },
-        "ai": {
-          "title": "AI-Generated Content",
-          "desc": "Questions, solutions, and tips powered by advanced AI for quality content."
-        },
-        "handwork": {
-          "title": "Handwork Verification",
-          "desc": "Upload photos of your handwritten solutions for instant AI analysis."
-        },
-        "xp": {
-          "title": "XP & Levels",
-          "desc": "Earn experience points and progress through 10 levels as you learn."
-        },
-        "streak": {
-          "title": "Streak System",
-          "desc": "Build daily habits with streaks and bonus XP for consistency."
-        },
-        "bilingual": {
-          "title": "Bilingual Support",
-          "desc": "Full Hebrew and English support with RTL interface."
+    "aiPowered": {
+      "badge": "Powered by AI",
+      "title": "Three Ways AI Helps You Learn",
+      "hoverPrompt": "Hover to see AI in action",
+      "homework": {
+        "title": "Homework AI Solver",
+        "desc": "Upload any homework PDF",
+        "action": "Instant step-by-step solutions",
+        "mockup": {
+          "before": "Calculus_HW.pdf",
+          "processing": "Extracting questions..."
         }
+      },
+      "practice": {
+        "title": "Daily Practice",
+        "desc": "5 AI-crafted exercises daily",
+        "action": "Personalized to your level",
+        "mockup": {
+          "before": "Daily Set: 5 problems",
+          "processing": "Generating exercises...",
+          "after": "+15 XP earned!"
+        }
+      },
+      "hints": {
+        "title": "Smart Hints",
+        "desc": "Stuck? Get guided hints",
+        "action": "Learn without the answer given",
+        "mockup": {
+          "before": "I'm stuck on this...",
+          "processing": "Thinking..."
+        }
+      }
+    },
+    "homeworkFeature": {
+      "badge": "Homework Solver",
+      "title": "Homework Solved in Seconds",
+      "subtitle": "Upload your homework PDF and get complete solutions",
+      "benefits": {
+        "extract": "Extracts ALL questions automatically",
+        "bilingual": "Step-by-step solutions in English & Hebrew",
+        "diagrams": "AI-generated diagrams when helpful",
+        "subquestions": "Handles sub-questions (a, b, c...)",
+        "learns": "Adapts to your problem types"
+      },
+      "demo": {
+        "clickToSee": "Click to see AI in action",
+        "uploading": "Uploading homework...",
+        "extracting": "AI is extracting questions...",
+        "solved": "Solved",
+        "question": "Question",
+        "aiSolution": "AI Solution",
+        "step1": "Apply the power rule:",
+        "step2Title": "Calculate each term:",
+        "step3Title": "Combine results:",
+        "answer": "Answer"
+      }
+    },
+    "practiceFeature": {
+      "badge": "Daily Practice",
+      "title": "Practice Made Personal",
+      "subtitle": "AI generates your daily exercises based on your skill level",
+      "benefits": {
+        "count": "1-10 exercises per day (you choose)",
+        "adaptive": "Adaptive difficulty based on mastery",
+        "photo": "Photo verification of handwritten work",
+        "review": "Review old topics automatically",
+        "streak": "Build unbreakable streaks"
+      },
+      "demo": {
+        "todaysPractice": "Today's Practice",
+        "exercisesTime": "5 exercises • ~15 min",
+        "progress": "Progress",
+        "completed": "completed",
+        "exercise": "Exercise",
+        "personalizedLevel": "Personalized to your level",
+        "aiGenerated": "AI Generated"
+      }
+    },
+    "hintsFeature": {
+      "badge": "Socratic Hints",
+      "title": "Hints That Teach, Not Tell",
+      "subtitle": "Our AI guides you to the answer without giving it away",
+      "benefits": {
+        "socratic": "Questions lead to understanding",
+        "levels": "Multiple hint levels if you're stuck",
+        "encourage": "Encouragement when you need it",
+        "partial": "Analyzes attempts for partial credit"
+      },
+      "demo": {
+        "aiTutor": "AI Tutor",
+        "alwaysHere": "Always here to help",
+        "currentProblem": "Current Problem",
+        "askHint": "Ask for another hint...",
+        "socraticMethod": "The Socratic Method",
+        "socraticDesc": "Our AI never gives away the answer. Instead, it asks guiding questions that help you discover the solution yourself — the best way to truly learn.",
+        "chat1User": "I'm stuck on finding the derivative of $x^3 - 2x^2$...",
+        "chat2Ai": "No problem! Let's break this down. What rule do we use when differentiating $x^n$?",
+        "chat3User": "The power rule... so $nx^{n-1}$?",
+        "chat4Ai": "Exactly! Now apply that to each term. What do you get for $x^3$?"
+      }
+    },
+    "benefits": {
+      "badge": "Why DailyMath",
+      "title": "More Than Just Practice",
+      "gamification": {
+        "title": "Gamification",
+        "desc": "XP, Levels 1-10, Streaks"
+      },
+      "bilingual": {
+        "title": "Bilingual",
+        "desc": "Full Hebrew & English support"
+      },
+      "courses": {
+        "title": "All Courses",
+        "desc": "Calculus, Algebra, Physics"
+      },
+      "time": {
+        "title": "Save Time",
+        "desc": "Homework solved in minutes"
       }
     },
     "showcase": {
@@ -632,10 +714,10 @@
       }
     },
     "cta": {
-      "title": "Ready to Master Math?",
-      "subtitle": "Join thousands of students improving their grades with daily practice.",
-      "button": "Start Your Free Journey",
-      "learnMore": "Learn More"
+      "title": "Ready for AI-Powered Learning?",
+      "subtitle": "Join thousands of students who've made math easier with AI-powered practice.",
+      "button": "Start Free",
+      "learnMore": "See Demo"
     },
     "footer": {
       "rights": "All rights reserved by DailyMath.",
@@ -719,10 +801,71 @@
     "allCompleteMessage": "You've viewed all solutions and earned {xp} XP!",
     "deleteConfirmTitle": "Delete Homework?",
     "deleteConfirmMessage": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+    "done": "Done",
+    "showingResults": "Showing {count} of {total}",
+    "noResultsTitle": "No results found",
+    "noResultsDescription": "Try adjusting your filters to see more homework",
+    "filters": {
+      "subject": "Subject",
+      "status": "Status",
+      "date": "Date",
+      "all": "All",
+      "allStatuses": "All statuses",
+      "allTime": "All time",
+      "today": "Today",
+      "thisWeek": "This week",
+      "thisMonth": "This month",
+      "clearAll": "Clear filters"
+    },
     "errors": {
       "invalidFileType": "Supported formats: PDF, JPG, PNG, WebP",
       "fileTooLarge": "File size exceeds {maxSize}MB limit",
-      "processingFailed": "Failed to process homework. Please try again."
+      "processingFailed": "Failed to process homework. Please try again.",
+      "contactSupport": "Contact Support",
+      "waitAndRetry": "Please wait a moment and try again",
+      "technicalDetails": "Technical Details",
+      "titles": {
+        "file_type": "Invalid File Type",
+        "file_size": "File Too Large",
+        "upload_failed": "Upload Failed",
+        "network": "Connection Error",
+        "ai_credits": "AI Service Unavailable",
+        "ai_rate_limit": "Too Many Requests",
+        "ai_unavailable": "AI Service Temporarily Down",
+        "processing": "Processing Error",
+        "timeout": "Processing Timed Out",
+        "server": "Server Error",
+        "auth": "Authentication Error",
+        "unknown": "Something Went Wrong"
+      },
+      "descriptions": {
+        "file_type": "Please upload a PDF, JPG, PNG, or WebP file.",
+        "file_size": "The file is too large. Maximum size is 10MB.",
+        "upload_failed": "We couldn't upload your file. Please check your connection.",
+        "network": "Unable to connect to our servers. Please check your internet connection.",
+        "ai_credits": "Our AI service has reached its usage limit for now.",
+        "ai_rate_limit": "We've received too many requests. The system needs a moment to catch up.",
+        "ai_unavailable": "The AI service is temporarily unavailable. This usually resolves quickly.",
+        "processing": "Something went wrong while analyzing your homework.",
+        "timeout": "The analysis took longer than expected. Your file might be too complex.",
+        "server": "Our servers encountered an issue. Our team has been notified.",
+        "auth": "Your session may have expired. Please log in again.",
+        "unknown": "An unexpected error occurred. Please try again."
+      },
+      "suggestions": {
+        "file_type": "Choose a different file in a supported format.",
+        "file_size": "Try compressing your PDF or splitting it into smaller files.",
+        "upload_failed": "Make sure you're connected to the internet and try again.",
+        "network": "Check your Wi-Fi or mobile data connection, then try again.",
+        "ai_credits": "This is a temporary issue. Please try again later or contact support if it persists.",
+        "ai_rate_limit": "Wait about 30 seconds before trying again.",
+        "ai_unavailable": "Please wait a few minutes and try again. The service usually recovers quickly.",
+        "processing": "Try uploading again. If the problem continues, try a different file format.",
+        "timeout": "Try uploading a smaller file or one with fewer pages.",
+        "server": "Please try again in a few minutes.",
+        "auth": "Log out and log back in, then try again.",
+        "unknown": "If this keeps happening, please contact support."
+      }
     }
   },
   "onboarding": {
@@ -789,5 +932,52 @@
       "reminderNote": "We'll remind you to practice",
       "startLearning": "Start Learning"
     }
+  },
+  "session": {
+    "startSession": "Start Session",
+    "availableQuestions": "Available Questions",
+    "total": "total",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "quickStart": "Quick Start",
+    "mode": "Session Mode",
+    "customize": "Customize",
+    "sessionLength": "Session Length",
+    "difficulty": "Difficulty",
+    "allDifficulties": "All",
+    "questions": "questions",
+    "noQuestionsAvailable": "No questions available for this selection",
+    "errorLoading": "Failed to load session",
+    "progressSummary": "{viewed} of {total} viewed • {xp} XP earned",
+    "congratulations": "Congratulations!",
+    "completedAll": "You completed all questions!",
+    "sessionComplete": "Session Complete",
+    "goodProgress": "Great progress on this session!",
+    "xpEarned": "XP Earned",
+    "questionsViewed": "Questions Viewed",
+    "timeSpent": "Time Spent",
+    "completionRate": "Completion",
+    "sessionDetails": "Session Details",
+    "source": "Source",
+    "startAnotherSession": "Start Another Session",
+    "backToTopic": "Back to Topic",
+    "backToHomework": "Back to Homework",
+    "showSolution": "Show Solution",
+    "hideSolution": "Hide Solution",
+    "answer": "Answer",
+    "solutionSteps": "Solution Steps",
+    "tip": "Tip",
+    "aiConfidence": "AI Confidence",
+    "start": "Start",
+    "startReviewSession": "Start Review Session",
+    "reviewSessionDescription": "Review your homework questions one at a time with step-by-step solutions",
+    "previous": "Previous",
+    "prev": "Prev",
+    "next": "Next",
+    "viewSolutionToProgress": "View the solution to continue",
+    "jumpToQuestion": "Jump to question",
+    "remaining": "remaining",
+    "noSolutionAvailable": "No solution available for this question"
   }
 }

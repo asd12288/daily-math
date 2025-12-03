@@ -71,7 +71,12 @@ export const getHomeworkByIdSchema = z.object({
 });
 
 /**
- * List homeworks input
+ * Date range filter enum
+ */
+export const dateRangeSchema = z.enum(["all", "today", "week", "month"]);
+
+/**
+ * List homeworks input with filters
  */
 export const listHomeworksSchema = z.object({
   limit: z.number().min(1).max(50).default(20),
@@ -79,6 +84,8 @@ export const listHomeworksSchema = z.object({
   status: z
     .enum(["all", "uploading", "processing", "completed", "failed"])
     .default("all"),
+  subject: z.string().default("all"), // "all" or specific subject like "Calculus 1"
+  dateRange: dateRangeSchema.default("all"),
 });
 
 /**

@@ -5,7 +5,6 @@ import { z } from "zod";
 import {
   createTRPCRouter,
   publicProcedure,
-  protectedProcedure,
   adminProcedure,
 } from "@/trpc/init";
 import {
@@ -35,7 +34,7 @@ import {
   deleteVideo,
   type CreateVideoInput,
 } from "./services/video.service";
-import type { VideoLanguage, VideoSource } from "@/lib/appwrite/types";
+// Types available for future use: VideoLanguage, VideoSource
 
 export const topicsRouter = createTRPCRouter({
   /**

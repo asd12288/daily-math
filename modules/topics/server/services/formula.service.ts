@@ -4,7 +4,7 @@
 import { Query } from "node-appwrite";
 import { createAdminClient } from "@/lib/appwrite/server";
 import { APPWRITE_CONFIG } from "@/lib/appwrite/config";
-import type { TopicFormula } from "@/lib/appwrite/types";
+// Type TopicFormula available from @/lib/appwrite/types
 
 const { databaseId, collections } = APPWRITE_CONFIG;
 

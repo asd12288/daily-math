@@ -12,15 +12,17 @@ interface MathDisplayProps {
   /** Additional CSS classes */
   className?: string;
   /** Size variant for math display */
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
 }
 
-/** Size classes for KaTeX rendering */
-const SIZE_CLASSES = {
-  sm: "text-sm [&_.katex]:text-base",
-  md: "text-base [&_.katex]:text-lg",
-  lg: "text-lg [&_.katex]:text-xl",
-  xl: "text-xl [&_.katex]:text-3xl",
+/** Size config for KaTeX rendering - using CSS variables for reliable sizing */
+const SIZE_CONFIG = {
+  sm: { text: "text-sm", katex: "1rem" },      // 16px
+  md: { text: "text-base", katex: "1.125rem" }, // 18px
+  lg: { text: "text-lg", katex: "1.25rem" },    // 20px
+  xl: { text: "text-xl", katex: "1.5rem" },     // 24px
+  "2xl": { text: "text-xl", katex: "1.875rem" }, // 30px
+  "3xl": { text: "text-2xl", katex: "2.25rem" }, // 36px
 };
 
 interface ParsedPart {
@@ -151,18 +153,21 @@ function parseInlineMath(text: string | undefined | null): ParsedPart[] {
  */
 export function MathDisplay({ content, block = false, className, size = "md" }: MathDisplayProps) {
   const parts = useMemo(() => parseMathContent(content), [content]);
-  const sizeClass = SIZE_CLASSES[size];
+  const config = SIZE_CONFIG[size];
 
   // Handle empty content
   if (!content) {
     return null;
   }
 
+  // Style object for KaTeX font size
+  const katexStyle = { "--katex-font-size": config.katex } as React.CSSProperties;
+
   // If forced block mode, treat entire content as block math
   if (block) {
     const mathContent = content.replace(/^\$\$|\$\$$/g, "").replace(/^\$|\$$/g, "").trim();
     return (
-      <div className={`${sizeClass} ${className || ""}`}>
+      <div className={`${config.text} katex-container ${className || ""}`} style={katexStyle}>
         <BlockMath math={mathContent} errorColor="#ef4444" />
       </div>
     );
@@ -173,7 +178,7 @@ export function MathDisplay({ content, block = false, className, size = "md" }: 
 
   if (hasBlockMath) {
     return (
-      <div className={`${sizeClass} ${className || ""}`}>
+      <div className={`${config.text} katex-container ${className || ""}`} style={katexStyle}>
         {parts.map((part, index) => {
           if (part.type === "block-math") {
             return (
@@ -193,7 +198,7 @@ export function MathDisplay({ content, block = false, className, size = "md" }: 
 
   // Only inline math or text
   return (
-    <span className={`${sizeClass} ${className || ""}`}>
+    <span className={`${config.text} katex-container ${className || ""}`} style={katexStyle}>
       {parts.map((part, index) => {
         if (part.type === "inline-math") {
           return <InlineMath key={index} math={part.content} errorColor="#ef4444" />;
@@ -241,19 +246,21 @@ export function MathEquation({
 }: {
   content: string;
   className?: string;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
 }) {
   const mathContent = content
     .replace(/^\$\$|\$\$$/g, "")
     .replace(/^\$|\$$/g, "")
     .trim();
 
-  const sizeClass = SIZE_CLASSES[size];
+  const config = SIZE_CONFIG[size];
+  const katexStyle = { "--katex-font-size": config.katex } as React.CSSProperties;
 
   return (
     <div
       dir="ltr"
-      className={`math-equation py-4 px-6 flex justify-center overflow-x-auto ${sizeClass} ${className || ""}`}
+      className={`math-equation py-4 px-6 flex justify-center overflow-x-auto katex-container ${config.text} ${className || ""}`}
+      style={katexStyle}
     >
       <BlockMath math={mathContent} errorColor="#ef4444" />
     </div>

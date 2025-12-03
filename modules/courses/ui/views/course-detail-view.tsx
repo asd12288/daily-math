@@ -126,18 +126,56 @@ export function CourseDetailView({ courseId, onTopicClick }: CourseDetailViewPro
 
 function CourseDetailSkeleton() {
   return (
-    <div className="relative h-[calc(100vh-64px)] min-h-[500px] -m-4 sm:-m-6 animate-pulse">
+    <div className="relative h-[calc(100vh-64px)] min-h-[500px] -m-4 sm:-m-6">
       {/* Floating header skeleton */}
       <div className="absolute top-4 left-4 right-4 z-10 flex items-center gap-3 px-4 py-3 rounded-xl bg-white dark:bg-gray-800 shadow-lg border border-gray-100 dark:border-gray-700">
-        <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-lg" />
-        <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-lg" />
-        <div className="flex-1 h-5 bg-gray-200 dark:bg-gray-700 rounded" />
-        <div className="w-20 h-5 bg-gray-200 dark:bg-gray-700 rounded" />
-        <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+        <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+        <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+        <div className="flex-1 min-w-0">
+          <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            <div className="h-5 w-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+            <span className="text-gray-300 dark:text-gray-600">/</span>
+            <div className="h-5 w-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          </div>
+          <div className="h-6 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        </div>
+        <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
       </div>
 
-      {/* Skill tree skeleton - full area */}
-      <div className="h-full w-full bg-gray-100 dark:bg-gray-950" />
+      {/* Skill tree skeleton - full area with node placeholders */}
+      <div className="h-full w-full bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-8">
+          {/* Simulated skill tree nodes */}
+          <div className="flex flex-col items-center gap-4">
+            {/* Top node */}
+            <div className="w-16 h-16 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse" />
+            {/* Connector line */}
+            <div className="w-0.5 h-8 bg-gray-200 dark:bg-gray-800 animate-pulse" />
+          </div>
+          {/* Middle row */}
+          <div className="flex items-center gap-12">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-14 h-14 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse" />
+              <div className="w-0.5 h-6 bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            </div>
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-14 h-14 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse" />
+              <div className="w-0.5 h-6 bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            </div>
+          </div>
+          {/* Bottom row */}
+          <div className="flex items-center gap-8">
+            <div className="w-12 h-12 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse" />
+            <div className="w-12 h-12 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse" />
+            <div className="w-12 h-12 bg-gray-200 dark:bg-gray-800 rounded-xl animate-pulse" />
+          </div>
+          {/* Loading text */}
+          <div className="h-4 w-32 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mt-4" />
+        </div>
+      </div>
     </div>
   );
 }

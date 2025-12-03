@@ -12,7 +12,7 @@ import type {
   Branch,
   BranchId,
 } from "../../types";
-import type { Exercise, ExerciseDifficulty } from "@/lib/appwrite/types";
+import type { ExerciseDifficulty } from "@/lib/appwrite/types";
 
 const { databaseId, collections } = APPWRITE_CONFIG;
 

@@ -74,7 +74,7 @@ export function TopicDetailView({ topicId, courseId }: TopicDetailViewProps) {
       case "formulas":
         return <FormulasTab topicId={topicId} />;
       case "practice":
-        return <PracticeTab topic={topic} courseId={courseId} />;
+        return <PracticeTab topic={topic} />;
       case "videos":
         return <VideosTab topicId={topicId} />;
       case "stats":
