@@ -20,7 +20,13 @@ export type BranchId =
   | "linear"
   | "polynomials"
   | "quadratics"
-  | "functions";
+  | "functions"
+  // Calculus 1 branches
+  | "limits"
+  | "derivatives-basic"
+  | "derivatives-advanced"
+  | "applications"
+  | "integration";
 
 /**
  * Topic from the database (parsed JSON fields)

@@ -65,7 +65,7 @@ export const gamificationRouter = createTRPCRouter({
 });
 
 /**
- * Get icon for a level (matching design-showcase mock data)
+ * Get icon for a level
  */
 function getLevelIcon(level: number): string {
   const icons: Record<number, string> = {

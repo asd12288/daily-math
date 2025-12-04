@@ -10,7 +10,13 @@ export type BranchId =
   | "linear"
   | "polynomials"
   | "quadratics"
-  | "functions";
+  | "functions"
+  // Calculus 1 branches
+  | "limits"
+  | "derivatives-basic"
+  | "derivatives-advanced"
+  | "applications"
+  | "integration";
 
 export interface Branch {
   id: BranchId;
@@ -40,6 +46,7 @@ export type TopicStatus = "not_started" | "in_progress" | "mastered";
  */
 export interface Topic {
   id: string;
+  courseId: string; // Course this topic belongs to
   name: string;
   nameHe: string;
   description: string;

@@ -4,10 +4,9 @@
 import { createAdminClient } from "@/lib/appwrite/server";
 import { APPWRITE_CONFIG } from "@/lib/appwrite/config";
 import { Query } from "node-appwrite";
-import { getCourseById, getActiveCourses } from "../../config";
-import { BRANCHES, TOPICS } from "@/modules/skill-tree/config";
-import type { Course, CourseWithProgress, CourseDetailData, Exercise } from "../../types";
-import type { TopicProgress } from "@/modules/skill-tree/types";
+import { TopicDataService } from "@/modules/skill-tree/server/services/topic-data.service";
+import type { CourseWithProgress, CourseDetailData, Exercise } from "../../types";
+import type { TopicProgress, Branch } from "@/modules/skill-tree/types";
 
 // Types for database course/topic structure (for future use with Appwrite)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -102,22 +101,33 @@ export class CoursesService {
    * Get all courses with user progress
    */
   async getCoursesWithProgress(userId: string): Promise<CourseWithProgress[]> {
-    const courses = getActiveCourses();
+    // Fetch courses from database instead of static config
+    const dbCourses = await this.getAllCoursesFromDB();
     const progressMap = await this.getUserProgressMap(userId);
     const enrolledCourseIds = await this.getEnrolledCourseIds(userId);
 
-    return courses.map((course) => {
-      const topics = this.getTopicsForCourse(course);
-      const masteredTopics = topics.filter(
+    return dbCourses.map((course) => {
+      // Parse topics from JSON string stored in the course document
+      const courseTopics = this.parseTopicsFromCourse(course.topics);
+      const masteredTopics = courseTopics.filter(
         (t) => (progressMap.get(t.id)?.mastery ?? 0) >= 80
       ).length;
 
       return {
-        ...course,
-        totalTopics: topics.length,
+        id: course.id,
+        name: course.name,
+        nameHe: course.nameHe,
+        description: course.description,
+        descriptionHe: course.descriptionHe,
+        icon: course.icon,
+        color: course.color,
+        branchIds: [], // Not used when fetching from DB
+        isActive: course.isActive,
+        sortOrder: course.sortOrder,
+        totalTopics: courseTopics.length,
         masteredTopics,
-        overallProgress: topics.length > 0
-          ? Math.round((masteredTopics / topics.length) * 100)
+        overallProgress: courseTopics.length > 0
+          ? Math.round((masteredTopics / courseTopics.length) * 100)
           : 0,
         isEnrolled: enrolledCourseIds.includes(course.id),
       };
@@ -125,37 +135,114 @@ export class CoursesService {
   }
 
   /**
-   * Get course detail with skill tree data
+   * Get all courses from DB with full details
+   */
+  private async getAllCoursesFromDB(): Promise<{
+    id: string;
+    name: string;
+    nameHe: string;
+    description: string;
+    descriptionHe: string;
+    icon: string;
+    color: string;
+    topics: string;
+    isActive: boolean;
+    sortOrder: number;
+  }[]> {
+    try {
+      const { databases } = await createAdminClient();
+
+      const response = await databases.listDocuments(
+        APPWRITE_CONFIG.databaseId,
+        APPWRITE_CONFIG.collections.courses,
+        [Query.orderAsc("sortOrder")]
+      );
+
+      return response.documents.map((doc) => ({
+        id: doc.$id,
+        name: doc.name,
+        nameHe: doc.nameHe,
+        description: doc.description,
+        descriptionHe: doc.descriptionHe,
+        icon: doc.icon,
+        color: doc.color,
+        topics: doc.topics || "[]",
+        isActive: doc.isActive ?? true,
+        sortOrder: doc.sortOrder ?? 0,
+      }));
+    } catch (error) {
+      console.error("Failed to fetch all courses from DB:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Parse topics array from JSON string
+   */
+  private parseTopicsFromCourse(topicsJson: string): DBTopic[] {
+    try {
+      return JSON.parse(topicsJson || "[]") as DBTopic[];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Get course detail with skill tree data - fetches from database
    */
   async getCourseDetail(userId: string, courseId: string): Promise<CourseDetailData | null> {
-    const course = getCourseById(courseId);
-    if (!course) return null;
+    // Fetch course from database
+    const dbCourse = await TopicDataService.getCourseById(courseId);
+    if (!dbCourse) return null;
 
-    const branches = BRANCHES.filter((b) => course.branchIds.includes(b.id));
-    const topics = this.getTopicsForCourse(course);
+    // Fetch topics and branches from database
+    const allTopics = await TopicDataService.getTopics();
+    const allBranches = await TopicDataService.getBranches();
+
+    // Filter topics for this course
+    const courseTopics = allTopics.filter((t) => t.courseId === courseId);
+
+    // Get unique branch IDs from topics
+    const branchIds = new Set(courseTopics.map((t) => t.branchId));
+    const branches: Branch[] = allBranches.filter((b) => branchIds.has(b.id));
+
     const progressMap = await this.getUserProgressMap(userId);
 
     // Calculate progress stats
-    const masteredTopics = topics.filter(
+    const masteredTopics = courseTopics.filter(
       (t) => (progressMap.get(t.id)?.mastery ?? 0) >= 80
     ).length;
-    const inProgressTopics = topics.filter(
+    const inProgressTopics = courseTopics.filter(
       (t) => {
         const mastery = progressMap.get(t.id)?.mastery ?? 0;
         return mastery > 0 && mastery < 80;
       }
     ).length;
 
+    // Build course object from DB data
+    const course = {
+      id: dbCourse.id,
+      name: dbCourse.name,
+      nameHe: dbCourse.nameHe,
+      description: dbCourse.description,
+      descriptionHe: dbCourse.descriptionHe,
+      icon: dbCourse.icon,
+      color: dbCourse.color,
+      branchIds: Array.from(branchIds),
+      isActive: dbCourse.isActive,
+      sortOrder: dbCourse.sortOrder,
+    };
+
     return {
       course,
       branches,
-      topics,
+      topics: courseTopics,
       userProgress: {
-        totalTopics: topics.length,
+        totalTopics: courseTopics.length,
         masteredTopics,
         inProgressTopics,
-        overallProgress: topics.length > 0
-          ? Math.round((masteredTopics / topics.length) * 100)
+        overallProgress: courseTopics.length > 0
+          ? Math.round((masteredTopics / courseTopics.length) * 100)
           : 0,
       },
     };
@@ -370,10 +457,6 @@ export class CoursesService {
   }
 
   // === Private helper methods ===
-
-  private getTopicsForCourse(course: Course) {
-    return TOPICS.filter((t) => course.branchIds.includes(t.branchId));
-  }
 
   private async getUserProgressMap(userId: string): Promise<Map<string, TopicProgress>> {
     const map = new Map<string, TopicProgress>();

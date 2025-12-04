@@ -4,7 +4,7 @@
 import { Query } from "node-appwrite";
 import { createAdminClient } from "@/lib/appwrite/server";
 import { APPWRITE_CONFIG } from "@/lib/appwrite/config";
-import { BRANCHES } from "@/modules/skill-tree/config/topics";
+import { TopicDataService } from "@/modules/skill-tree/server/services/topic-data.service";
 import type {
   TopicDocument,
   TopicDetail,
@@ -68,7 +68,20 @@ export async function getTopicDetail(topicId: string): Promise<TopicDetail | nul
   const topic = await getTopicById(topicId);
   if (!topic) return null;
 
-  const branch = BRANCHES.find((b) => b.id === topic.branchId);
+  // Fetch branches from database
+  const branches = await TopicDataService.getBranches();
+  const dbBranch = branches.find((b) => b.id === topic.branchId);
+
+  // Convert to topics module Branch type
+  const branch: Branch | undefined = dbBranch ? {
+    id: dbBranch.id as BranchId,
+    name: dbBranch.name,
+    nameHe: dbBranch.nameHe,
+    icon: dbBranch.icon,
+    color: dbBranch.color,
+    order: dbBranch.order,
+  } : undefined;
+
   if (!branch) return null;
 
   // Fetch prerequisite topics
@@ -135,11 +148,22 @@ export async function getTopicsGroupedByBranch(
   courseId: string
 ): Promise<TopicsByBranch[]> {
   const topics = await getTopicsByCourse(courseId);
+  const dbBranches = await TopicDataService.getBranches();
+
+  // Convert DB branches to topics module Branch type
+  const branches: Branch[] = dbBranches.map((b) => ({
+    id: b.id as BranchId,
+    name: b.name,
+    nameHe: b.nameHe,
+    icon: b.icon,
+    color: b.color,
+    order: b.order,
+  }));
 
   const groupedMap = new Map<BranchId, TopicDocument[]>();
 
   // Initialize groups for all branches
-  for (const branch of BRANCHES) {
+  for (const branch of branches) {
     groupedMap.set(branch.id, []);
   }
 
@@ -148,11 +172,14 @@ export async function getTopicsGroupedByBranch(
     const group = groupedMap.get(topic.branchId);
     if (group) {
       group.push(topic);
+    } else {
+      // If branch doesn't exist yet, create it
+      groupedMap.set(topic.branchId, [topic]);
     }
   }
 
   // Convert to array and filter out empty branches
-  return BRANCHES
+  return branches
     .map((branch) => ({
       branch,
       topics: groupedMap.get(branch.id) || [],
@@ -161,17 +188,26 @@ export async function getTopicsGroupedByBranch(
 }
 
 /**
- * Get all branches
+ * Get all branches from database
  */
-export function getAllBranches(): Branch[] {
-  return BRANCHES;
+export async function getAllBranches(): Promise<Branch[]> {
+  const dbBranches = await TopicDataService.getBranches();
+  return dbBranches.map((b) => ({
+    id: b.id as BranchId,
+    name: b.name,
+    nameHe: b.nameHe,
+    icon: b.icon,
+    color: b.color,
+    order: b.order,
+  }));
 }
 
 /**
- * Get a single branch by ID
+ * Get a single branch by ID from database
  */
-export function getBranchById(branchId: BranchId): Branch | undefined {
-  return BRANCHES.find((b) => b.id === branchId);
+export async function getBranchById(branchId: BranchId): Promise<Branch | undefined> {
+  const branches = await getAllBranches();
+  return branches.find((b) => b.id === branchId);
 }
 
 /**

@@ -158,4 +158,78 @@ export class AuthService {
       return { success: false, error: AUTH_MESSAGES.ERROR.UNKNOWN };
     }
   }
+
+  /**
+   * Sync OAuth user profile
+   * Called after OAuth login to ensure user profile exists
+   * Returns onboarding status for redirect decision
+   */
+  static async syncOAuthProfile(userId: string, email: string, name: string) {
+    try {
+      const { databases } = await createAdminClient();
+
+      // Check if profile exists
+      let profileExists = false;
+      try {
+        await databases.getDocument(
+          process.env.APPWRITE_DATABASE_ID!,
+          process.env.APPWRITE_USERS_PROFILE_COLLECTION!,
+          userId
+        );
+        profileExists = true;
+      } catch {
+        profileExists = false;
+      }
+
+      // Create profile if needed
+      if (!profileExists) {
+        await databases.createDocument(
+          process.env.APPWRITE_DATABASE_ID!,
+          process.env.APPWRITE_USERS_PROFILE_COLLECTION!,
+          userId,
+          {
+            userId,
+            email,
+            displayName: name || email.split("@")[0],
+            totalXp: 0,
+            currentLevel: 1,
+            currentStreak: 0,
+            longestStreak: 0,
+            dailyExerciseCount: 5,
+            enrolledCourses: "[]",
+            preferredTime: "09:00",
+            emailReminders: true,
+            streakWarnings: true,
+            weeklyReport: false,
+          }
+        );
+      }
+
+      // Check onboarding status
+      const { Query } = await import("node-appwrite");
+      let onboardingComplete = false;
+      try {
+        const onboardingDocs = await databases.listDocuments(
+          process.env.APPWRITE_DATABASE_ID!,
+          process.env.APPWRITE_ONBOARDING_COLLECTION!,
+          [Query.equal("userId", userId)]
+        );
+
+        if (onboardingDocs.documents.length > 0) {
+          onboardingComplete = onboardingDocs.documents[0].isCompleted === true;
+        }
+      } catch {
+        onboardingComplete = false;
+      }
+
+      return {
+        success: true,
+        isNewUser: !profileExists,
+        onboardingComplete,
+      };
+    } catch (error: unknown) {
+      console.error("OAuth profile sync error:", error);
+      return { success: false, isNewUser: false, onboardingComplete: false };
+    }
+  }
 }

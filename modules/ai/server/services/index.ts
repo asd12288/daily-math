@@ -2,3 +2,4 @@
 export * from "./question-generation.service";
 export * from "./socratic-tutor.service";
 export * from "./image-analysis.service";
+export * from "./daily-insight.service";

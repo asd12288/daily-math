@@ -8,7 +8,10 @@ import { Icon } from "@iconify/react";
 import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/shared/ui";
 import { MathEquation, MathDisplay } from "@/shared/ui/math-display";
+import { SolutionGraph } from "@/shared/ui/math-graph";
+import { AIGraphButton } from "./AIGraphButton";
 import type { HomeworkQuestionWithSolution, CombinedSolutionSteps } from "../../types";
+import { parseAISuggestions } from "../../types";
 
 interface QuestionSolutionProps {
   question: HomeworkQuestionWithSolution;
@@ -88,6 +91,11 @@ export function QuestionSolution({
   const tip = isHebrew && question.solution?.tipHe
     ? question.solution.tipHe
     : question.solution?.tip;
+
+  // Parse AI suggestions for graph detection
+  const aiSuggestions = useMemo(() => {
+    return parseAISuggestions(question.aiSuggestions);
+  }, [question.aiSuggestions]);
 
   // Handle missing solution (on-demand generation not yet triggered)
   // Skip this check if isGenerating is true (we want to show loading state)
@@ -246,6 +254,23 @@ export function QuestionSolution({
             </div>
           </div>
         </div>
+      )}
+
+      {/* ─── Graph Visualization ─── */}
+      {/* AI-powered graph detection (for new uploads with aiSuggestions) */}
+      {aiSuggestions?.graphable && (
+        <AIGraphButton aiSuggestions={aiSuggestions} />
+      )}
+
+      {/* Fallback: Regex-based detection for legacy questions without AI graph data */}
+      {!aiSuggestions?.graphable && (
+        <SolutionGraph
+          questionText={question.questionText}
+          answer={question.answer}
+          solutionSteps={solutionSteps}
+          interactive={true}
+          height={250}
+        />
       )}
 
       {/* ─── Footer Actions ─── */}

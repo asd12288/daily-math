@@ -3,37 +3,40 @@
 
 import { createAdminClient } from "@/lib/appwrite/server";
 import { ID, Query } from "node-appwrite";
-import {
-  BRANCHES,
-  TOPICS,
-  getTopicsByBranch,
-  getTopicById,
-} from "../../config/topics";
+import { TopicDataService } from "./topic-data.service";
 import {
   type TopicProgress,
   type TopicWithProgress,
   type BranchWithTopics,
   type SkillTreeState,
   type TopicStatus,
+  type BranchId,
   calculateMastery,
   determineTopicStatus,
   checkPrerequisitesMet,
   MASTERY_CONSTANTS,
 } from "../../types";
-import { getCourseById } from "@/modules/courses/config/courses-data";
 
 export class SkillTreeService {
   /**
    * Get the full skill tree state for a user
    */
   static async getSkillTreeState(userId: string): Promise<SkillTreeState> {
+    // Fetch topics and branches from database
+    const [allTopics, allBranches] = await Promise.all([
+      TopicDataService.getTopics(),
+      TopicDataService.getBranches(),
+    ]);
+
     // Fetch all user progress for this user
     const progressMap = await this.getUserProgressMap(userId);
 
     // Build branches with topics and progress
     // Note: All topics are unlocked - we just track progress and show recommendations
-    const branches: BranchWithTopics[] = BRANCHES.map((branch) => {
-      const branchTopics = getTopicsByBranch(branch.id);
+    const branches: BranchWithTopics[] = allBranches.map((branch) => {
+      const branchTopics = allTopics
+        .filter((t) => t.branchId === branch.id)
+        .sort((a, b) => a.order - b.order);
 
       const topicsWithProgress: TopicWithProgress[] = branchTopics.map(
         (topic) => {
@@ -77,12 +80,12 @@ export class SkillTreeService {
     });
 
     // Calculate overall stats
-    const totalTopics = TOPICS.length;
+    const totalTopics = allTopics.length;
     const totalMastered = branches.reduce(
       (sum, b) => sum + b.completedCount,
       0
     );
-    const overallProgress = Math.round((totalMastered / totalTopics) * 100);
+    const overallProgress = totalTopics > 0 ? Math.round((totalMastered / totalTopics) * 100) : 0;
 
     // Find current focus topic (first in_progress or first not_started)
     let currentFocusTopic: string | null = null;
@@ -126,12 +129,18 @@ export class SkillTreeService {
     userId: string,
     enrolledCourseIds: string[]
   ): Promise<SkillTreeState> {
-    // Build set of enrolled branch IDs from courses
-    const enrolledBranchIds = new Set<string>();
-    for (const courseId of enrolledCourseIds) {
-      const course = getCourseById(courseId);
-      if (course) {
-        course.branchIds.forEach((branchId) => enrolledBranchIds.add(branchId));
+    // Fetch all topics and branches from database
+    const [allTopics, allBranches] = await Promise.all([
+      TopicDataService.getTopics(),
+      TopicDataService.getBranches(),
+    ]);
+
+    // Build set of enrolled branch IDs from topics that belong to enrolled courses
+    const enrolledBranchIds = new Set<BranchId>();
+    for (const topic of allTopics) {
+      const topicWithCourse = topic as unknown as { courseId?: string };
+      if (topicWithCourse.courseId && enrolledCourseIds.includes(topicWithCourse.courseId)) {
+        enrolledBranchIds.add(topic.branchId);
       }
     }
 
@@ -141,15 +150,17 @@ export class SkillTreeService {
       return this.getSkillTreeState(userId);
     }
 
-    // Filter BRANCHES to only enrolled ones
-    const filteredBranches = BRANCHES.filter((b) => enrolledBranchIds.has(b.id));
+    // Filter branches to only enrolled ones
+    const filteredBranches = allBranches.filter((b) => enrolledBranchIds.has(b.id));
 
     // Fetch all user progress for this user
     const progressMap = await this.getUserProgressMap(userId);
 
     // Build branches with topics and progress (only for enrolled branches)
     const branches: BranchWithTopics[] = filteredBranches.map((branch) => {
-      const branchTopics = getTopicsByBranch(branch.id);
+      const branchTopics = allTopics
+        .filter((t) => t.branchId === branch.id)
+        .sort((a, b) => a.order - b.order);
 
       const topicsWithProgress: TopicWithProgress[] = branchTopics.map(
         (topic) => {
@@ -240,7 +251,7 @@ export class SkillTreeService {
     userId: string,
     topicId: string
   ): Promise<TopicWithProgress | null> {
-    const topic = getTopicById(topicId);
+    const topic = await TopicDataService.getTopicById(topicId);
     if (!topic) return null;
 
     const progressMap = await this.getUserProgressMap(userId);

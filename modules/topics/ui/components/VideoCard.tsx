@@ -3,6 +3,7 @@
 
 "use client";
 
+import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { useLocale } from "next-intl";
 import { getYouTubeThumbnailUrl } from "@/shared/ui/youtube-embed";
@@ -47,11 +48,12 @@ export function VideoCard({ video, onClick, isSelected }: VideoCardProps) {
     >
       {/* Thumbnail */}
       <div className="relative aspect-video bg-gray-900">
-        <img
+        <Image
           src={video.thumbnailUrl || getYouTubeThumbnailUrl(video.videoId)}
           alt={title}
-          className="w-full h-full object-cover"
-          loading="lazy"
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 320px"
         />
 
         {/* Play overlay */}

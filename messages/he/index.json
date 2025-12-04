@@ -66,6 +66,9 @@
     "checkEmail": "בדוק את האימייל שלך",
     "resetEmailSent": "שלחנו לך קישור לאיפוס סיסמה. אנא בדוק את תיבת הדואר שלך.",
     "sendResetLink": "שלח קישור איפוס",
+    "signInWithGoogle": "Google",
+    "signInWithFacebook": "Facebook",
+    "oauthError": "האימות נכשל. נסה שוב.",
     "errors": {
       "emailRequired": "אימייל נדרש",
       "emailInvalid": "אנא הכנס אימייל תקין",
@@ -79,7 +82,7 @@
     }
   },
   "dashboard": {
-    "welcome": "בוקר טוב",
+    "welcome": "שלום",
     "todaysSet": "הסט של היום",
     "exercises": "תרגילים",
     "exercise": "תרגיל",
@@ -92,7 +95,40 @@
     "toNextLevel": "לרמה הבאה",
     "streakCalendar": "לוח רצף",
     "currentStreak": "רצף נוכחי",
-    "days": "ימים"
+    "days": "ימים",
+    "today": "היום",
+    "streak": "רצף",
+    "todaysPractice": "התרגול של היום",
+    "completed": "הושלם",
+    "minLeft": "דק׳ נותרו",
+    "solve": "פתור",
+    "completionBonus": "השלם הכל לבונוס!",
+    "allCompleted": "סיימת להיום!",
+    "continue": "המשך",
+    "noDailySetTitle": "מוכן לתרגל?",
+    "noDailySetDescription": "התחל את הסט היומי שלך לבניית רצף",
+    "startDailySet": "התחל סט יומי",
+    "homework": "שיעורי בית",
+    "documents": "מסמכים",
+    "viewed": "נצפו",
+    "noHomework": "טרם הועלו שיעורי בית",
+    "uploadHomework": "העלה שיעורי בית",
+    "uploadHomeworkDesc": "העלה PDF או תמונה",
+    "startPracticeDesc": "המשך תרגילים יומיים",
+    "browseTopics": "עיין בנושאים",
+    "browseTopicsDesc": "חקור את כל הנושאים",
+    "settingsDesc": "התאם העדפות",
+    "quickActions": "פעולות מהירות",
+    "myCourses": "הקורסים שלי",
+    "viewAll": "הצג הכל",
+    "noCourses": "לא נרשמת לקורסים",
+    "browseCourses": "עיין בקורסים",
+    "viewAllCourses": "הצג כל הקורסים",
+    "topicsMastered": "נושאים שולטו",
+    "progress": "התקדמות",
+    "next": "הבא",
+    "todaysInsight": "התובנה של היום",
+    "tryPractice": "נסה תרגול"
   },
   "practice": {
     "exerciseOf": "תרגיל {current} מתוך {total}",
@@ -866,6 +902,21 @@
         "auth": "התנתק והתחבר מחדש, ואז נסה שוב.",
         "unknown": "אם זה ממשיך לקרות, פנה לתמיכה."
       }
+    },
+    "generateGraph": "הצג גרף",
+    "hideGraph": "הסתר גרף",
+    "graphVisualization": "גרף הפונקציה",
+    "dragToExplore": "גרור לחקור את הפונקציה",
+    "graphTypes": {
+      "polynomial": "פולינום",
+      "rational": "רציונלית",
+      "trigonometric": "טריגונומטרית",
+      "exponential": "מעריכית",
+      "logarithmic": "לוגריתמית",
+      "limit": "גבול",
+      "derivative": "נגזרת",
+      "integral": "אינטגרל",
+      "other": "פונקציה"
     }
   },
   "onboarding": {

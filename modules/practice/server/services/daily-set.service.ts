@@ -11,10 +11,7 @@ import {
   XP_BASE,
   calculateStreakBonus,
 } from "@/modules/gamification/server/services/user-profile.service";
-import {
-  TOPICS,
-  getTopicById,
-} from "@/modules/skill-tree/config/topics";
+import { TopicDataService } from "@/modules/skill-tree/server/services/topic-data.service";
 import { generateQuestionWithRetry } from "@/modules/ai/server/services/question-generation.service";
 import type { SkillTreeState, TopicWithProgress, Topic } from "@/modules/skill-tree/types";
 import { analyzeHandwrittenSolution } from "@/modules/ai/server/services/image-analysis.service";
@@ -171,16 +168,38 @@ export class DailySetService {
 
     // Fallback to first topic if nothing found (all mastered = maintenance mode)
     if (!focusTopic) {
-      const firstTopic = TOPICS[0];
-      focusTopic = {
-        ...firstTopic,
-        progress: null,
-        status: "not_started" as const,
-        mastery: 0,
-        canPractice: true as const,
-        hasUnmetPrerequisites: false,
-        recommendedFirst: [],
+      const firstTopic = await TopicDataService.getFirstTopic();
+      if (firstTopic) {
+        focusTopic = {
+          ...firstTopic,
+          progress: null,
+          status: "not_started" as const,
+          mastery: 0,
+          canPractice: true as const,
+          hasUnmetPrerequisites: false,
+          recommendedFirst: [],
+        };
+      }
+    }
+
+    // If still no focus topic (empty database), return empty set
+    if (!focusTopic) {
+      console.error("[DailySet] No topics found in database");
+      const emptySet: DailySet = {
+        id: ID.unique(),
+        userId,
+        date,
+        problems: [],
+        currentIndex: 0,
+        completedCount: 0,
+        totalProblems: 0,
+        isCompleted: true,
+        completedAt: new Date().toISOString(),
+        xpEarned: 0,
+        focusTopicId: "",
+        focusTopicName: "No topics available",
       };
+      return emptySet;
     }
 
     let problems: Problem[] = [];
@@ -258,11 +277,15 @@ export class DailySetService {
     const usedExerciseIds: string[] = [];
     const problems: Problem[] = [];
 
+    // Get fallback topic from database
+    const firstTopic = await TopicDataService.getFirstTopic();
+    const fallbackTopicId = firstTopic?.id || focusTopicId;
+
     // Get topic selections
     const reviewTopic = this.selectReviewTopic(skillTree, config);
-    const reviewTopicId = reviewTopic?.id || TOPICS[0].id;
-    const foundationTopic = this.selectFoundationTopic(focusTopicId);
-    const foundationTopicId = foundationTopic?.id || TOPICS[0].id;
+    const reviewTopicId = reviewTopic?.id || fallbackTopicId;
+    const foundationTopic = await this.selectFoundationTopic(focusTopicId);
+    const foundationTopicId = foundationTopic?.id || fallbackTopicId;
 
     // Generate review slots (easy, from mastered topics)
     for (let i = 0; i < config.slots.review; i++) {
@@ -325,11 +348,11 @@ export class DailySetService {
     const exercises = await this.fetchExercisesFromBank(topicId, difficulty, 1, excludeIds);
 
     if (exercises.length > 0) {
-      return this.exerciseToProblem(exercises[0], slot, index);
+      return await this.exerciseToProblem(exercises[0], slot, index);
     }
 
     // Fallback to placeholder if bank is empty
-    return this.createProblemPlaceholder(topicId, slot, difficulty, index);
+    return await this.createProblemPlaceholder(topicId, slot, difficulty, index);
   }
 
   /**
@@ -634,8 +657,8 @@ export class DailySetService {
     return sorted[0];
   }
 
-  private static selectFoundationTopic(focusTopicId: string): Topic | null {
-    const topic = getTopicById(focusTopicId);
+  private static async selectFoundationTopic(focusTopicId: string): Promise<Topic | null> {
+    const topic = await TopicDataService.getTopicById(focusTopicId);
     if (!topic || topic.prerequisites.length === 0) return null;
 
     // Get a random prerequisite
@@ -643,7 +666,7 @@ export class DailySetService {
       topic.prerequisites[
         Math.floor(Math.random() * topic.prerequisites.length)
       ];
-    return getTopicById(prereqId) || null;
+    return await TopicDataService.getTopicById(prereqId);
   }
 
   /**
@@ -656,7 +679,33 @@ export class DailySetService {
     index: number,
     useAI: boolean = false
   ): Promise<Problem> {
-    const topic = getTopicById(topicId) || TOPICS[0];
+    let topic = await TopicDataService.getTopicById(topicId);
+    if (!topic) {
+      topic = await TopicDataService.getFirstTopic();
+    }
+
+    // If still no topic (empty database), create minimal placeholder
+    if (!topic) {
+      return {
+        id: `problem_${Date.now()}_${index}`,
+        topicId,
+        topicName: "Unknown Topic",
+        topicNameHe: "נושא לא ידוע",
+        slot,
+        difficulty,
+        questionText: "No questions available",
+        questionTextHe: "אין שאלות זמינות",
+        questionLatex: "",
+        correctAnswer: "",
+        answerType: "expression" as const,
+        solutionSteps: [],
+        solutionStepsHe: [],
+        hint: "",
+        hintHe: "",
+        estimatedMinutes: 5,
+        xpReward: XP_REWARDS[difficulty],
+      };
+    }
 
     // Use AI generation if enabled and API key is available
     if (useAI && process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
@@ -696,14 +745,41 @@ export class DailySetService {
 
   /**
    * Create a placeholder problem (no AI)
+   * Note: This is async now to support database lookups
    */
-  private static createProblemPlaceholder(
+  private static async createProblemPlaceholder(
     topicId: string,
     slot: ProblemSlot,
     difficulty: Difficulty,
     index: number
-  ): Problem {
-    const topic = getTopicById(topicId) || TOPICS[0];
+  ): Promise<Problem> {
+    let topic = await TopicDataService.getTopicById(topicId);
+    if (!topic) {
+      topic = await TopicDataService.getFirstTopic();
+    }
+
+    // Fallback for empty database
+    if (!topic) {
+      return {
+        id: `placeholder_${Date.now()}_${index}`,
+        topicId,
+        topicName: "Unknown Topic",
+        topicNameHe: "נושא לא ידוע",
+        slot,
+        difficulty,
+        questionText: "No questions available",
+        questionTextHe: "אין שאלות זמינות",
+        questionLatex: "",
+        correctAnswer: "",
+        answerType: "expression" as const,
+        solutionSteps: [],
+        solutionStepsHe: [],
+        hint: "",
+        hintHe: "",
+        estimatedMinutes: 5,
+        xpReward: XP_REWARDS[difficulty],
+      };
+    }
 
     return {
       id: `problem_${Date.now()}_${index}`,
@@ -735,15 +811,15 @@ export class DailySetService {
   }
 
   /**
-   * Synchronous createProblem for backward compatibility
+   * Async createProblem wrapper
    */
-  private static createProblem(
+  private static async createProblem(
     topicId: string,
     slot: ProblemSlot,
     difficulty: Difficulty,
     index: number
-  ): Problem {
-    return this.createProblemPlaceholder(topicId, slot, difficulty, index);
+  ): Promise<Problem> {
+    return await this.createProblemPlaceholder(topicId, slot, difficulty, index);
   }
 
   private static generatePlaceholderQuestion(
@@ -882,19 +958,26 @@ export class DailySetService {
   /**
    * Convert an Exercise from the bank to a Problem for daily sets
    */
-  private static exerciseToProblem(
+  private static async exerciseToProblem(
     exercise: Exercise,
     slot: ProblemSlot,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     index: number
-  ): Problem {
-    const topic = getTopicById(exercise.topicId) || TOPICS[0];
+  ): Promise<Problem> {
+    let topic = await TopicDataService.getTopicById(exercise.topicId);
+    if (!topic) {
+      topic = await TopicDataService.getFirstTopic();
+    }
+
+    // Use topic data if available, fallback to exercise data
+    const topicName = topic?.name || "Unknown Topic";
+    const topicNameHe = topic?.nameHe || "נושא לא ידוע";
 
     return {
       id: exercise.$id, // Use the exercise ID
       topicId: exercise.topicId,
-      topicName: topic.name,
-      topicNameHe: topic.nameHe,
+      topicName,
+      topicNameHe,
       slot,
       difficulty: exercise.difficulty,
       // Map from actual DB field names

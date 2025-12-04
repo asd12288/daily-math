@@ -7,7 +7,7 @@ import { z } from "zod/v4";
 import { createAdminClient } from "@/lib/appwrite/server";
 import { APPWRITE_CONFIG } from "@/lib/appwrite/config";
 import { HomeworkService } from "./homework.service";
-// NOTE: Classification removed from upload for speed - classify on-demand during solving if needed
+import { GraphClassificationService } from "./graph-classification.service";
 import type {
   ExtractedQuestion,
   OriginalLanguage,
@@ -167,6 +167,7 @@ export class PdfProcessingService {
   static async processHomework(
     homeworkId: string,
     userId: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _generateIllustrations: boolean = false
   ): Promise<{ success: boolean; questionCount: number; error?: string }> {
     console.log(`[PDF] Starting FAST extraction for homework ${homeworkId}`);
@@ -217,8 +218,14 @@ export class PdfProcessingService {
 
       console.log(`[PDF] Found ${extractedQuestions.length} questions`);
 
-      // NOTE: Classification step REMOVED for faster uploads
-      // Classification now happens on-demand when user requests a solution
+      // ===== STEP 1.5: Classify questions for graph detection =====
+      console.log(`[PDF] Step 1.5: Detecting graphable equations`);
+      const graphClassifications = await GraphClassificationService.classifyBatch(
+        extractedQuestions.map((q) => ({
+          orderIndex: q.orderIndex,
+          questionText: q.questionText,
+        }))
+      );
 
       // ===== STEP 2: Store questions WITHOUT solutions (FAST) =====
       console.log(`[PDF] Step 2: Storing ${extractedQuestions.length} questions (solutions on-demand)`);
@@ -236,11 +243,19 @@ export class PdfProcessingService {
         languages.add(question.originalLanguage);
 
         try {
-          // Default AI suggestions (classification happens on-demand)
+          // Get graph classification for this question
+          const graphInfo = graphClassifications.get(question.orderIndex);
+
+          // Build AI suggestions with graph detection data
           const aiSuggestions: AISuggestions = {
-            visualizationNeeded: false, // Will be determined when solution is generated
+            visualizationNeeded: graphInfo?.graphable || false,
             estimatedSteps: 3,
-            questionCategory: "calculation",
+            questionCategory: graphInfo?.graphable ? "graph" : "calculation",
+            // Graph detection fields
+            graphable: graphInfo?.graphable || false,
+            graphableFunction: graphInfo?.graphableFunction,
+            graphType: graphInfo?.graphType,
+            graphDomain: graphInfo?.graphDomain,
           };
 
           // Determine parent question ID for sub-questions

@@ -66,6 +66,9 @@
     "checkEmail": "Check Your Email",
     "resetEmailSent": "We've sent you a password reset link. Please check your inbox.",
     "sendResetLink": "Send Reset Link",
+    "signInWithGoogle": "Google",
+    "signInWithFacebook": "Facebook",
+    "oauthError": "Authentication failed. Please try again.",
     "errors": {
       "emailRequired": "Email is required",
       "emailInvalid": "Please enter a valid email",
@@ -79,7 +82,7 @@
     }
   },
   "dashboard": {
-    "welcome": "Good morning",
+    "welcome": "Welcome",
     "todaysSet": "Today's Set",
     "exercises": "exercises",
     "exercise": "Exercise",
@@ -92,7 +95,40 @@
     "toNextLevel": "to next level",
     "streakCalendar": "Streak Calendar",
     "currentStreak": "Current Streak",
-    "days": "days"
+    "days": "days",
+    "today": "Today",
+    "streak": "Streak",
+    "todaysPractice": "Today's Practice",
+    "completed": "completed",
+    "minLeft": "min left",
+    "solve": "Solve",
+    "completionBonus": "Complete all for bonus!",
+    "allCompleted": "All done for today!",
+    "continue": "Continue",
+    "noDailySetTitle": "Ready to practice?",
+    "noDailySetDescription": "Start your daily set to build your streak",
+    "startDailySet": "Start Daily Set",
+    "homework": "Homework",
+    "documents": "documents",
+    "viewed": "viewed",
+    "noHomework": "No homework uploaded yet",
+    "uploadHomework": "Upload Homework",
+    "uploadHomeworkDesc": "Upload PDF or image",
+    "startPracticeDesc": "Continue daily exercises",
+    "browseTopics": "Browse Topics",
+    "browseTopicsDesc": "Explore all topics",
+    "settingsDesc": "Customize preferences",
+    "quickActions": "Quick Actions",
+    "myCourses": "My Courses",
+    "viewAll": "View All",
+    "noCourses": "No courses enrolled",
+    "browseCourses": "Browse Courses",
+    "viewAllCourses": "View All Courses",
+    "topicsMastered": "topics mastered",
+    "progress": "Progress",
+    "next": "Next",
+    "todaysInsight": "Today's Insight",
+    "tryPractice": "Try Practice"
   },
   "practice": {
     "exerciseOf": "Exercise {current} of {total}",
@@ -866,6 +902,21 @@
         "auth": "Log out and log back in, then try again.",
         "unknown": "If this keeps happening, please contact support."
       }
+    },
+    "generateGraph": "Show Graph",
+    "hideGraph": "Hide Graph",
+    "graphVisualization": "Function Graph",
+    "dragToExplore": "Drag to explore the function",
+    "graphTypes": {
+      "polynomial": "Polynomial",
+      "rational": "Rational",
+      "trigonometric": "Trigonometric",
+      "exponential": "Exponential",
+      "logarithmic": "Logarithmic",
+      "limit": "Limit",
+      "derivative": "Derivative",
+      "integral": "Integral",
+      "other": "Function"
     }
   },
   "onboarding": {

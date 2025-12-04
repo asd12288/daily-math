@@ -3,10 +3,7 @@
 
 import { generateQuestionWithRetry } from "@/modules/ai/server/services/question-generation.service";
 import { SkillTreeService } from "@/modules/skill-tree/server/services/skill-tree.service";
-import {
-  TOPICS,
-  getTopicById,
-} from "@/modules/skill-tree/config/topics";
+import { TopicDataService } from "@/modules/skill-tree/server/services/topic-data.service";
 import type { Problem, ProblemSlot, DailySetConfig } from "../../types";
 import { DEFAULT_DAILY_SET_CONFIG, XP_REWARDS } from "../../types";
 import type { Difficulty } from "@/modules/skill-tree/types";
@@ -32,11 +29,29 @@ export async function generateDailyProblems(
   focusTopicId: string,
   config: DailySetConfig = DEFAULT_DAILY_SET_CONFIG
 ): Promise<DailyGenerationResult> {
-  const focusTopic = getTopicById(focusTopicId) || TOPICS[0];
+  // Fetch focus topic from database
+  let focusTopic = await TopicDataService.getTopicById(focusTopicId);
+  if (!focusTopic) {
+    focusTopic = await TopicDataService.getFirstTopic();
+  }
+
+  // If no topics in database, return empty result
+  if (!focusTopic) {
+    return {
+      problems: [],
+      focusTopicId: focusTopicId,
+      focusTopicName: "No topics available",
+      generatedCount: 0,
+      fallbackCount: 0,
+    };
+  }
+
+  // Get fallback topic ID for other selections
+  const fallbackTopicId = focusTopic.id;
 
   // Select topics for each slot type
-  const reviewTopicId = await selectReviewTopic(userId) || TOPICS[0].id;
-  const foundationTopicId = selectFoundationTopic(focusTopicId) || TOPICS[0].id;
+  const reviewTopicId = await selectReviewTopic(userId) || fallbackTopicId;
+  const foundationTopicId = await selectFoundationTopic(focusTopicId) || fallbackTopicId;
 
   let generatedCount = 0;
   let fallbackCount = 0;
@@ -78,11 +93,11 @@ export async function generateDailyProblems(
       });
 
       generatedCount++;
-      return questionToProblem(question, slotConfig.slot, slotConfig.difficulty, index, slotConfig.topicId);
+      return await questionToProblem(question, slotConfig.slot, slotConfig.difficulty, index, slotConfig.topicId);
     } catch {
       fallbackCount++;
       // Return placeholder problem on failure
-      return createPlaceholderProblem(slotConfig.topicId, slotConfig.slot, slotConfig.difficulty, index);
+      return await createPlaceholderProblem(slotConfig.topicId, slotConfig.slot, slotConfig.difficulty, index);
     }
   });
 
@@ -100,22 +115,30 @@ export async function generateDailyProblems(
 /**
  * Convert an AI-generated question to a Problem
  */
-function questionToProblem(
+async function questionToProblem(
   question: GeneratedQuestion,
   slot: ProblemSlot,
   difficulty: Difficulty,
   index: number,
   topicId?: string
-): Problem {
-  const topic = getTopicById(topicId || "") || TOPICS[0];
+): Promise<Problem> {
+  let topic = await TopicDataService.getTopicById(topicId || "");
+  if (!topic) {
+    topic = await TopicDataService.getFirstTopic();
+  }
+
+  // Use topic data if available, fallback to question data
+  const topicName = topic?.name || "Unknown Topic";
+  const topicNameHe = topic?.nameHe || "נושא לא ידוע";
+  const actualTopicId = topic?.id || topicId || "";
 
   // Find the topic from the question context
   // Since GeneratedQuestion doesn't include topicId, we use the slot config's topic
   return {
     id: `ai_problem_${Date.now()}_${index}`,
-    topicId: topic.id,
-    topicName: topic.name,
-    topicNameHe: topic.nameHe,
+    topicId: actualTopicId,
+    topicName,
+    topicNameHe,
     slot,
     difficulty: difficulty,
     questionText: question.questionText,
@@ -185,11 +208,12 @@ async function selectReviewTopic(userId: string): Promise<string | null> {
 /**
  * Select a foundation topic - a prerequisite of the focus topic
  */
-function selectFoundationTopic(focusTopicId: string): string | null {
-  const topic = getTopicById(focusTopicId);
+async function selectFoundationTopic(focusTopicId: string): Promise<string | null> {
+  const topic = await TopicDataService.getTopicById(focusTopicId);
   if (!topic || topic.prerequisites.length === 0) {
     // If no prerequisites, pick a simpler topic from foundations
-    const foundations = TOPICS.filter((t) => t.branchId === "foundations");
+    const allTopics = await TopicDataService.getTopics();
+    const foundations = allTopics.filter((t) => t.branchId === "foundations");
     if (foundations.length === 0) return null;
     return foundations[Math.floor(Math.random() * foundations.length)].id;
   }
@@ -204,13 +228,21 @@ function selectFoundationTopic(focusTopicId: string): string | null {
 /**
  * Create a placeholder problem when AI generation fails
  */
-function createPlaceholderProblem(
+async function createPlaceholderProblem(
   topicId: string,
   slot: ProblemSlot,
   difficulty: Difficulty,
   index: number
-): Problem {
-  const topic = getTopicById(topicId) || TOPICS[0];
+): Promise<Problem> {
+  let topic = await TopicDataService.getTopicById(topicId);
+  if (!topic) {
+    topic = await TopicDataService.getFirstTopic();
+  }
+
+  // Use topic data if available, fallback to generic placeholders
+  const topicName = topic?.name || "Unknown Topic";
+  const topicNameHe = topic?.nameHe || "נושא לא ידוע";
+  const actualTopicId = topic?.id || topicId;
 
   const placeholderQuestions: Record<Difficulty, { text: string; textHe: string; answer: string }> = {
     easy: {
@@ -234,9 +266,9 @@ function createPlaceholderProblem(
 
   return {
     id: `placeholder_${Date.now()}_${index}`,
-    topicId: topic.id,
-    topicName: topic.name,
-    topicNameHe: topic.nameHe,
+    topicId: actualTopicId,
+    topicName,
+    topicNameHe,
     slot,
     difficulty,
     questionText: placeholder.text,
@@ -254,8 +286,8 @@ function createPlaceholderProblem(
       "שלב 2: החל את השיטה המתאימה",
       "שלב 3: פשט ופתור",
     ],
-    hint: `Think about the basic rules of ${topic.name}.`,
-    hintHe: `חשוב על הכללים הבסיסיים של ${topic.nameHe}.`,
+    hint: `Think about the basic rules of ${topicName}.`,
+    hintHe: `חשוב על הכללים הבסיסיים של ${topicNameHe}.`,
     estimatedMinutes: difficulty === "easy" ? 2 : difficulty === "medium" ? 3 : 5,
     xpReward: XP_REWARDS[difficulty],
   };
@@ -270,7 +302,7 @@ export async function generateTopicProblems(
   count: number = 5,
   difficulty?: Difficulty
 ): Promise<Problem[]> {
-  const topic = getTopicById(topicId);
+  const topic = await TopicDataService.getTopicById(topicId);
   if (!topic) {
     throw new Error(`Topic not found: ${topicId}`);
   }
@@ -314,7 +346,7 @@ export async function generateTopicProblems(
         xpReward: XP_REWARDS[diff],
       };
     } catch {
-      return createPlaceholderProblem(topicId, "core", diff, index);
+      return await createPlaceholderProblem(topicId, "core", diff, index);
     }
   });
 

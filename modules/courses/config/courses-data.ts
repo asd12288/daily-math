@@ -1,33 +1,13 @@
 // modules/courses/config/courses-data.ts
-// Static course definitions
+// Course definitions - All data comes from database
 
 import type { Course } from "../types";
 
 /**
- * Pre-Calculus Algebra Course
- * This is the primary (and initially only) course for MVP
+ * All available courses - loaded from database
+ * This array is kept empty as courses are managed in Appwrite
  */
-export const PRE_CALCULUS_COURSE: Course = {
-  id: "pre-calculus-algebra",
-  name: "Pre-Calculus Algebra",
-  nameHe: "אלגברה קדם-אינפיניטסימלית",
-  description: "Master the foundations of algebra before diving into calculus. Covers order of operations through quadratics and functions.",
-  descriptionHe: "שלוט ביסודות האלגברה לפני הכניסה לחדו״א. מכסה סדר פעולות ועד משוואות ריבועיות ופונקציות.",
-  icon: "tabler:math-function",
-  color: "#3B82F6", // primary-500
-  isActive: true,
-  sortOrder: 1,
-  branchIds: ["foundations", "linear", "polynomials", "quadratics", "functions"],
-};
-
-/**
- * All available courses
- * For MVP, only Pre-Calculus Algebra is active
- */
-export const COURSES: Course[] = [
-  PRE_CALCULUS_COURSE,
-  // Future courses will be added here when ready
-];
+export const COURSES: Course[] = [];
 
 /**
  * Get course by ID

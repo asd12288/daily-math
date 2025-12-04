@@ -4,6 +4,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { useTranslations, useLocale } from "next-intl";
 import { MathDisplay } from "@/shared/ui/math-display";
@@ -164,12 +165,13 @@ export function QuestionGroupCard({
 
             {/* AI Illustration */}
             {parentQuestion.illustrationUrl && (
-              <div className="mt-4 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800">
-                <img
+              <div className="mt-4 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 relative h-40">
+                <Image
                   src={parentQuestion.illustrationUrl}
                   alt={t("homework.illustrationAlt")}
-                  className="w-full h-auto max-h-40 object-contain"
-                  loading="lazy"
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 768px) 100vw, 600px"
                 />
               </div>
             )}

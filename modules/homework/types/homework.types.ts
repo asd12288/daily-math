@@ -48,6 +48,18 @@ export type QuestionCategory =
   | "geometry"
   | "definition";
 
+// Graph type for function visualization
+export type GraphType =
+  | "polynomial"
+  | "rational"
+  | "trigonometric"
+  | "exponential"
+  | "logarithmic"
+  | "limit"
+  | "derivative"
+  | "integral"
+  | "other";
+
 /**
  * Pre-analysis result from AI classification (lightweight)
  * Used to determine optimal processing strategy
@@ -70,6 +82,12 @@ export interface AISuggestions {
   visualizationReason?: string;
   estimatedSteps: number;
   questionCategory: QuestionCategory;
+
+  // Graph detection fields (populated during upload)
+  graphable?: boolean;
+  graphableFunction?: string; // JS-parseable format: "x**2 + 2*x", "Math.sin(x)"
+  graphType?: GraphType;
+  graphDomain?: [number, number]; // Suggested x-range for graphing
 }
 
 /**

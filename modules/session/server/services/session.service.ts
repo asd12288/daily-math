@@ -765,6 +765,7 @@ export class SessionService {
   static async getAvailableQuestionCount(
     source: SessionSource,
     sourceId: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _difficulty?: SessionDifficulty | "all"
   ): Promise<{ total: number; easy: number; medium: number; hard: number }> {
     const { databases } = await createAdminClient();

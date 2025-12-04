@@ -6,6 +6,7 @@ export * from "./modal";
 export * from "./toast";
 export * from "./toaster";
 export * from "./math-display";
+export * from "./math-graph";
 export * from "./theory-renderer";
 export * from "./youtube-embed";
 export * from "./session";
